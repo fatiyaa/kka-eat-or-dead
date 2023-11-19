@@ -10,3 +10,4 @@ BLUE = (90, 169, 246)
 ORANGE = (255, 150, 112)
 BG = (255,255,204)
 PAWN_RAD = 40
+path_icon = "assets/Icon.png"

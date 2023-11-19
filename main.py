@@ -7,7 +7,9 @@ from cons import *
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+icon = pygame.image.load(path_icon)  # Replace with the actual path to your icon image
 pygame.display.set_caption('Eat or Death')
+pygame.display.set_icon(icon)
 
 run = True
 clock = pygame.time.Clock()
