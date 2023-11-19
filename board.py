@@ -65,7 +65,7 @@ class Board:
         self.click_board(pos)
         self.click_pawn(pos)
         self.find_possible_moves()
-        print(self.board)
+        # print(self.board)
             
     def click_pawn(self, pos):
         (x, y) = pos
