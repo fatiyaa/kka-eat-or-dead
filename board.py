@@ -144,30 +144,45 @@ class Board:
     def check_winner(self):
         col = 0
         row = 0
+        winner = None
         for a in range(RC):
             if self.board[a][col] != [] and self.board[a][col+1] != [] and self.board[a][col+2] != [] :
                 if self.board[a][col][-1].color == self.board[a][col+1][-1].color and self.board[a][col+1][-1].color == self.board[a][col+2][-1].color:
-                    return self.board[a][col][-1].color
-        
+                    if winner == None or winner == self.board[a][col][-1].color:
+                        winner = self.board[a][col][-1].color
+                    else:
+                        return GREEN
+                    
         for b in range(RC):
             if self.board[row][b] != [] and self.board[row+1][b] != [] and self.board[row+2][b] != [] :
                 if self.board[row][b][-1].color == self.board[row+1][b][-1].color and self.board[row+1][b][-1].color == self.board[row+2][b][-1].color:
-                    return self.board[row][b][-1].color
+                    if winner == None or winner == self.board[row][b][-1].color:
+                        winner = self.board[row][b][-1].color
+                    else:
+                        return GREEN
                 
         if self.board[row][col] != [] and self.board[row+1][col+1] != [] and self.board[row+2][col+2] != [] :
                 if self.board[row][col][-1].color == self.board[row+1][col+1][-1].color and self.board[row+1][col+1][-1].color == self.board[row+2][col+2][-1].color:
-                    return self.board[row][col][-1].color
+                    if winner == None or winner == self.board[row][col][-1].color:
+                        winner = self.board[row][col][-1].color
+                    else:
+                        return GREEN
         elif self.board[row][col+2] != [] and self.board[row+1][col+1] != [] and self.board[row+2][col] != [] :
                 if self.board[row][col+2][-1].color == self.board[row+1][col+1][-1].color and self.board[row+1][col+1][-1].color == self.board[row+2][col][-1].color:
-                    return self.board[row][col+2][-1].color
+                    if winner == None or winner == self.board[row][col+2][-1].color:
+                            winner = self.board[row][col+2][-1].color
+                    else:
+                        return GREEN
         
-        return None
+        return winner
     
     def winner(self, screen, win):
         pygame.draw.rect(screen, BG, (20, SCREEN_HEIGHT//3, SCREEN_WIDTH-40, SCREEN_HEIGHT//3))
         pygame.draw.rect(screen, BLACK, (20, SCREEN_HEIGHT//3, SCREEN_WIDTH-40, SCREEN_HEIGHT//3), 4)
         font = pygame.font.SysFont(None, 100)
-        text = font.render('RED IS WIN', True, RED);
+        text = font.render("IT'S A TIE", True, GREEN);
+        if win == RED:
+            text = font.render('RED IS WIN', True, RED);
         if win == BLUE:
             text = font.render('BLUE IS WIN', True, BLUE);
         screen.blit(text, text.get_rect(center = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2 -20)))
