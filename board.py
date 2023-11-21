@@ -49,6 +49,8 @@ class Board:
         self.draw_possible_moves()
         self.draw_board_border()
         for pawn in self.pawns:
+            if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col] != [] and self.board[pawn.row][pawn.col][-1] != pawn:
+                continue
             pawn.draw(self.screen)
             
     def draw_board(self):
@@ -145,38 +147,78 @@ class Board:
         else:
             self.turn = BLUE
         
+    def pawn_existed(self, a, b, c):
+        if a != [] and b != [] and c != []:
+            return True
+        return False
+    
+    def pawn_in_row(self, a, b, c):
+        if a==b and b==c:
+            return True
+        return False
+    
     def check_winner(self):
         col = 0
         row = 0
         winner = None
+        
         for a in range(RC):
-            if self.board[a][col] != [] and self.board[a][col+1] != [] and self.board[a][col+2] != [] :
-                if self.board[a][col][-1].color == self.board[a][col+1][-1].color and self.board[a][col+1][-1].color == self.board[a][col+2][-1].color:
+            if self.pawn_existed(self.board[a][col],self.board[a][col+1], self.board[a][col+2]) :
+                if self.pawn_in_row(self.board[a][col][-1].color, self.board[a][col+1][-1].color, self.board[a][col+2][-1].color):
                     if winner == None or winner == self.board[a][col][-1].color:
                         winner = self.board[a][col][-1].color
                     else:
                         return GREEN
                     
         for b in range(RC):
-            if self.board[row][b] != [] and self.board[row+1][b] != [] and self.board[row+2][b] != [] :
-                if self.board[row][b][-1].color == self.board[row+1][b][-1].color and self.board[row+1][b][-1].color == self.board[row+2][b][-1].color:
+            if self.pawn_existed(self.board[row][b], self.board[row+1][b], self.board[row+2][b]) :
+                if self.pawn_in_row(self.board[row][b][-1].color, self.board[row+1][b][-1].color, self.board[row+2][b][-1].color):
                     if winner == None or winner == self.board[row][b][-1].color:
                         winner = self.board[row][b][-1].color
                     else:
                         return GREEN
                 
-        if self.board[row][col] != [] and self.board[row+1][col+1] != [] and self.board[row+2][col+2] != [] :
-                if self.board[row][col][-1].color == self.board[row+1][col+1][-1].color and self.board[row+1][col+1][-1].color == self.board[row+2][col+2][-1].color:
+        if self.pawn_existed(self.board[row][col], self.board[row+1][col+1], self.board[row+2][col+2]) :
+                if self.pawn_in_row(self.board[row][col][-1].color, self.board[row+1][col+1][-1].color, self.board[row+2][col+2][-1].color):
                     if winner == None or winner == self.board[row][col][-1].color:
                         winner = self.board[row][col][-1].color
                     else:
                         return GREEN
-        elif self.board[row][col+2] != [] and self.board[row+1][col+1] != [] and self.board[row+2][col] != [] :
-                if self.board[row][col+2][-1].color == self.board[row+1][col+1][-1].color and self.board[row+1][col+1][-1].color == self.board[row+2][col][-1].color:
+        elif self.pawn_existed(self.board[row][col+2], self.board[row+1][col+1], self.board[row+2][col]) :
+                if self.pawn_in_row(self.board[row][col+2][-1].color, self.board[row+1][col+1][-1].color, self.board[row+2][col][-1].color):
                     if winner == None or winner == self.board[row][col+2][-1].color:
                             winner = self.board[row][col+2][-1].color
                     else:
                         return GREEN
+        
+        # for a in range(RC):
+        #     if self.board[a][col] != [] and self.board[a][col+1] != [] and self.board[a][col+2] != [] :
+        #         if self.board[a][col][-1].color == self.board[a][col+1][-1].color and self.board[a][col+1][-1].color == self.board[a][col+2][-1].color:
+        #             if winner == None or winner == self.board[a][col][-1].color:
+        #                 winner = self.board[a][col][-1].color
+        #             else:
+        #                 return GREEN
+                    
+        # for b in range(RC):
+        #     if self.board[row][b] != [] and self.board[row+1][b] != [] and self.board[row+2][b] != [] :
+        #         if self.board[row][b][-1].color == self.board[row+1][b][-1].color and self.board[row+1][b][-1].color == self.board[row+2][b][-1].color:
+        #             if winner == None or winner == self.board[row][b][-1].color:
+        #                 winner = self.board[row][b][-1].color
+        #             else:
+        #                 return GREEN
+                
+        # if self.board[row][col] != [] and self.board[row+1][col+1] != [] and self.board[row+2][col+2] != [] :
+        #         if self.board[row][col][-1].color == self.board[row+1][col+1][-1].color and self.board[row+1][col+1][-1].color == self.board[row+2][col+2][-1].color:
+        #             if winner == None or winner == self.board[row][col][-1].color:
+        #                 winner = self.board[row][col][-1].color
+        #             else:
+        #                 return GREEN
+        # elif self.board[row][col+2] != [] and self.board[row+1][col+1] != [] and self.board[row+2][col] != [] :
+        #         if self.board[row][col+2][-1].color == self.board[row+1][col+1][-1].color and self.board[row+1][col+1][-1].color == self.board[row+2][col][-1].color:
+        #             if winner == None or winner == self.board[row][col+2][-1].color:
+        #                     winner = self.board[row][col+2][-1].color
+        #             else:
+        #                 return GREEN
         
         return winner
     
