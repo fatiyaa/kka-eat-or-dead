@@ -28,5 +28,5 @@ class Button:
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
-    def checkMouseInput(self):
+    def checkMouseInput(self, mouse_pos):
         return self.is_hovered and pygame.mouse.get_pressed()[0] == 1
