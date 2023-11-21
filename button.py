@@ -1,28 +1,26 @@
-#Button untuk menampilkan tombol yang berguna dalam interaksi tampilan UI Home/Main Screen
-class Button():
-	# Inisialisasi tombol
-	def __init__(self, x_pos, y_pos, text_show, font, base_color, hovering_color):
-		self.x_pos = x_pos
-		self.y_pos = y_pos
-		self.font = font
-		self.base_color, self.hovering_color = base_color, hovering_color
-		self.text_show = text_show
-		self.text = self.font.render(self.text_show, True, self.base_color)
-		self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
+import pygame
 
-	# Melakukan pembaruan UI supaya tombol dapat ditampilkan
-	def update(self, screen):
-		screen.blit(self.text, self.text_rect)
+class Button:
+    def __init__(self, x, y, text, font, text_color, base_color, hover_color):
+        self.x = x
+        self.y = y
+        self.text = text
+        self.font = font
+        self.text_color = text_color
+        self.base_color = base_color
+        self.hover_color = hover_color
+        self.rect = pygame.Rect(x, y, 200, 50)
+        self.is_hovered = False
 
-	# Mengecek klik mouse 
-	def checkMouseInput(self, position):
-		if position[0] in range(self.text_rect.left, self.text_rect.right) and position[1] in range(self.text_rect.top, self.text_rect.bottom):
-			return True
-		return False
+    def hoverColor(self, mouse_pos):
+        self.is_hovered = self.rect.collidepoint(mouse_pos)
 
-	# Memberikan hover color
-	def hoverColor(self, position):
-		if position[0] in range(self.text_rect.left, self.text_rect.right) and position[1] in range(self.text_rect.top, self.text_rect.bottom):
-			self.text = self.font.render(self.text_show, True, self.hovering_color)
-		else:
-			self.text = self.font.render(self.text_show, True, self.base_color)
+    def update(self, screen):
+        pygame.draw.rect(screen, self.hover_color if self.is_hovered else self.base_color, self.rect)
+        pygame.draw.rect(screen, (0, 0, 0), self.rect, 3)  # Tambahkan garis pinggir
+        text_surface = self.font.render(self.text, True, self.text_color)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        screen.blit(text_surface, text_rect)
+
+    def checkMouseInput(self, mouse_pos):
+        return self.is_hovered and pygame.mouse.get_pressed()[0] == 1
