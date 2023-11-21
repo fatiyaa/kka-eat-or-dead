@@ -16,11 +16,17 @@ class Button:
         self.is_hovered = self.rect.collidepoint(mouse_pos)
 
     def update(self, screen):
-        pygame.draw.rect(screen, self.hover_color if self.is_hovered else self.base_color, self.rect)
-        pygame.draw.rect(screen, (0, 0, 0), self.rect, 3)  # Tambahkan garis pinggir
-        text_surface = self.font.render(self.text, True, self.text_color)
+        padding = 5
+        padded_rect = self.rect.inflate(-2 * padding, 0)
+
+        pygame.draw.rect(screen, self.hover_color if self.is_hovered else self.base_color, padded_rect)
+        pygame.draw.rect(screen, (0, 0, 0), padded_rect, 3) 
+        
+        font_size = 30
+        font = pygame.font.Font(None, font_size)
+        text_surface = font.render(self.text, True, self.text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
-    def checkMouseInput(self, mouse_pos):
+    def checkMouseInput(self):
         return self.is_hovered and pygame.mouse.get_pressed()[0] == 1
