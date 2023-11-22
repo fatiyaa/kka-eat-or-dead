@@ -15,7 +15,6 @@ class Board:
         ]
         self.pawns = []
         for i in range(75, SCREEN_WIDTH-75, 90):
-            # Use (i % 5) + 1 to cycle through numbers 1 to 5
             self.pawns.append(Pawn((i-75)//90 + 1, RED, i+45, 85, f"assets/r{(i // 90) % 5 + 1}.png"))
             self.pawns.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90, f"assets/b{(i // 90) % 5 + 1}.png"))
 
@@ -48,11 +47,15 @@ class Board:
         self.draw_board()
         self.draw_possible_moves()
         self.draw_board_border()
+        self.draw_pawn()
+        self.draw_turn()
+
+    def draw_pawn(self):
         for pawn in self.pawns:
             if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col] != [] and self.board[pawn.row][pawn.col][-1] != pawn:
                 continue
             pawn.draw(self.screen)
-            
+
     def draw_board(self):
         for row in range(RC):
             for col in range(RC):
@@ -146,6 +149,26 @@ class Board:
             self.turn = RED
         else:
             self.turn = BLUE
+
+    def draw_turn(self):
+        if self.selected_pawn is not None:
+            return 
+        font_size = 80
+        font = pygame.font.SysFont(None, font_size)
+        text_stroke = pygame.font.SysFont(None, font_size+1)
+
+        text = font.render("BLUE's Turn" if self.turn == BLUE else "RED's Turn", True, self.turn)
+        text_stroke_surface = text_stroke.render("BLUE's Turn" if self.turn == BLUE else "RED's Turn", True, BLACK)
+
+        text_rect= text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        text_stroke_rect  = text_rect.copy()
+
+        self.screen.blit(text_stroke_surface, text_stroke_rect.move(3, 3))
+        self.screen.blit(text_stroke_surface, text_stroke_rect.move(-3, -3))
+        self.screen.blit(text_stroke_surface, text_stroke_rect.move(-3, 3)) 
+        self.screen.blit(text_stroke_surface, text_stroke_rect.move(3, -3))
+        self.screen.blit(text, text_rect)
+
         
     def pawn_existed(self, a, b, c):
         if a != [] and b != [] and c != []:
@@ -247,7 +270,3 @@ class Board:
                     self.reset()
                 if quit_button.checkMouseInput(pygame.mouse.get_pos()):
                     pygame.quit()
-                
-        
-        
-   
