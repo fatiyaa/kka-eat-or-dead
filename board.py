@@ -14,15 +14,9 @@ class Board:
             [[], [], []]
         ]
         self.pawns = []
-        for i in range(75, SCREEN_WIDTH-75, 90):
-            self.pawns.append(Pawn((i-75)//90 + 1, RED, i+45, 85, f"assets/r{(i // 90) % 5 + 1}.png"))
-            self.pawns.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90, f"assets/b{(i // 90) % 5 + 1}.png"))
-
-        
-            
+        self.add_pawn()          
         self.selected_pawn: Pawn = None
         self.possible_moves = []
-        
         self.turn = BLUE
         
     def reset(self):
@@ -32,15 +26,9 @@ class Board:
             [[], [], []]
         ]
         self.pawns = []
-        for i in range(75, SCREEN_WIDTH-75, 90):
-            self.pawns.append(Pawn((i-75)//90 + 1, RED, i+45, 85, f"assets/r{(i // 90) % 5 + 1}.png"))
-            self.pawns.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90, f"assets/b{(i // 90) % 5 + 1}.png"))
-
-        
-            
+        self.add_pawn()              
         self.selected_pawn: Pawn = None
         self.possible_moves = []
-        
         self.turn = BLUE
         
     def draw(self):
@@ -49,6 +37,11 @@ class Board:
         self.draw_board_border()
         self.draw_pawn()
         self.draw_turn()
+
+    def add_pawn(self):
+        for i in range(75, SCREEN_WIDTH-75, 90):
+            self.pawns.append(Pawn((i-75)//90 + 1, RED, i+45, 85, f"assets/r{(i // 90) % 5 + 1}.png"))
+            self.pawns.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90, f"assets/b{(i // 90) % 5 + 1}.png"))
 
     def draw_pawn(self):
         for pawn in self.pawns:
