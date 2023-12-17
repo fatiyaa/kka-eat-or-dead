@@ -256,11 +256,3 @@ class Board:
         for button in [self.home_button, self.quit_button]:
             button.hoverColor(pygame.mouse.get_pos())
             button.update(screen)
-
-        # for event in pygame.event.get():
-        #     if event.type == pygame.MOUSEBUTTONDOWN:
-        #         if self.home_button.checkMouseInput(pygame.mouse.get_pos()):
-        #             # self.reset()
-        #             current_screen = "HOME"
-        #         if self.quit_button.checkMouseInput(pygame.mouse.get_pos()):
-        #             pygame.quit()
