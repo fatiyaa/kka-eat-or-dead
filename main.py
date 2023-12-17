@@ -1,37 +1,63 @@
 import pygame
-from board import Board
+
 from cons import *
-from button import Button
-# from wkwk.cons import *
-# from wkwk.board import Board
+from home import Home
+from board import Board
+from howtoplay import HowToPlay
 
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-icon = pygame.image.load(path_icon)  # Replace with the actual path to your icon image
+icon = pygame.image.load(path_icon)
 pygame.display.set_caption('Eat or Death')
 pygame.display.set_icon(icon)
 
 
+
 run = True
 clock = pygame.time.Clock()
+home = Home(screen)
 gameboard = Board(screen)
+howtoplay = HowToPlay(screen)
+current_screen = "HOME"
 
 while run:
     clock.tick(60)
     screen.fill(BG)
-    gameboard.draw()
-    winner = gameboard.check_winner()
-    if winner is not None:
-        gameboard.winner(screen, winner)
-        
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            gameboard.update(pygame.mouse.get_pos())
-            
+
+    if current_screen == "HOME":
+        home.draw()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if home.start_button.checkMouseInput(pygame.mouse.get_pos()):
+                    current_screen = "HOWTOPLAY"
+                elif home.exit_button.checkMouseInput(pygame.mouse.get_pos()):
+                    run = False
+
+    elif current_screen == "HOWTOPLAY":
+        howtoplay.draw()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if howtoplay.friends_button.checkMouseInput(pygame.mouse.get_pos()):
+                    current_screen = "GAME"
+                if howtoplay.computer_button.checkMouseInput(pygame.mouse.get_pos()):
+                    current_screen = "GAME"
+
+    elif current_screen == "GAME":
+        gameboard.draw()
+        winner = gameboard.check_winner()
+        if winner is not None:
+            gameboard.winner(screen, winner)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                gameboard.update(pygame.mouse.get_pos())
+
     pygame.display.update()
             
 pygame.quit()
