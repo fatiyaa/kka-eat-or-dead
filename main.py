@@ -52,6 +52,16 @@ while run:
         winner = gameboard.check_winner()
         if winner is not None:
             gameboard.winner(screen, winner)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if gameboard.home_button.checkMouseInput(pygame.mouse.get_pos()):
+                        current_screen = "HOME"
+                        gameboard.reset()
+                    elif gameboard.quit_button.checkMouseInput(pygame.mouse.get_pos()):
+                        run = False
+                
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False

@@ -250,16 +250,17 @@ class Board:
         screen.blit(text, text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 20)))
 
         font = pygame.font.SysFont(None, 50)
-        play_again_button = Button(100, SCREEN_HEIGHT//2+40, 'Play Again', font, (0, 0, 0), BLUE, LIGHT_BLUE)
-        quit_button = Button(SCREEN_WIDTH//2, SCREEN_HEIGHT//2+40, 'Quit Game', font, (0, 0, 0), RED, LIGHT_RED)
+        self.home_button = Button(100, SCREEN_HEIGHT//2+40, 'Home', font, (0, 0, 0), BLUE, LIGHT_BLUE)
+        self.quit_button = Button(SCREEN_WIDTH//2, SCREEN_HEIGHT//2+40, 'Quit Game', font, (0, 0, 0), RED, LIGHT_RED)
 
-        for button in [play_again_button, quit_button]:
+        for button in [self.home_button, self.quit_button]:
             button.hoverColor(pygame.mouse.get_pos())
             button.update(screen)
 
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if play_again_button.checkMouseInput(pygame.mouse.get_pos()):
-                    self.reset()
-                if quit_button.checkMouseInput(pygame.mouse.get_pos()):
-                    pygame.quit()
+        # for event in pygame.event.get():
+        #     if event.type == pygame.MOUSEBUTTONDOWN:
+        #         if self.home_button.checkMouseInput(pygame.mouse.get_pos()):
+        #             # self.reset()
+        #             current_screen = "HOME"
+        #         if self.quit_button.checkMouseInput(pygame.mouse.get_pos()):
+        #             pygame.quit()
