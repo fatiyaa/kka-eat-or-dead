@@ -76,6 +76,15 @@ while run:
         winner = aiNIH.check_winner()
         if winner is not None:
             aiNIH.winner(screen, winner)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if aiNIH.home_button.checkMouseInput(pygame.mouse.get_pos()):
+                        current_screen = "HOME"
+                        gameboard.reset()
+                    elif aiNIH.quit_button.checkMouseInput(pygame.mouse.get_pos()):
+                        run = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
