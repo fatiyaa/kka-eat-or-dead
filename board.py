@@ -1,12 +1,12 @@
 import pygame
+import sys
 from cons import *
 from pawn import Pawn
 from button import Button
 
 
 class Board:
-    
-    def __init__(self, screen):
+    def __init__(self, screen, game_mode="1vs1"):  # Add the default value for game_mode
         self.screen = screen
         self.board = [
             [[], [], []],
@@ -16,9 +16,10 @@ class Board:
         self.pawns = []
         self.add_pawn()          
         self.selected_pawn: Pawn = None
-        self.possible_moves = []
+        self.possible_moves = []  # Initialize possible_moves
         self.turn = BLUE
-        
+        self.game_mode = game_mode  # Add game_mode attribute
+
     def reset(self):
         self.board = [
             [[], [], []],
@@ -61,12 +62,6 @@ class Board:
         for row in range(RC):
             for col in range(RC):
                 pygame.draw.rect(self.screen, RED, (col*SQUARE +75-4, row*SQUARE+175-4, SQUARE+4, SQUARE+4), 4)
-         
-    def update(self, pos):
-        self.click_board(pos)
-        self.click_pawn(pos)
-        self.find_possible_moves()
-        print(self.board)
             
     def click_pawn(self, pos):
         (x, y) = pos
@@ -75,7 +70,7 @@ class Board:
             if pawn.color != self.turn:
                 continue
             
-            if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col][-1] != pawn:
+            if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col] and self.board[pawn.row][pawn.col][-1] != pawn:
                 continue
             
             if not pawn.is_collide(x, y):
@@ -256,3 +251,120 @@ class Board:
         for button in [self.home_button, self.quit_button]:
             button.hoverColor(pygame.mouse.get_pos())
             button.update(screen)
+
+    def copy_board(self):
+            return [[list(cell) for cell in row] for row in self.board]
+
+    def computer_algorithm(self, board, depth=0, maximizing_player=True, alpha=float('-inf'), beta=float('inf')):
+        MAX_DEPTH = 3
+        winner = self.check_winner()
+        if winner == RED:
+            return 10 - depth
+        elif winner == BLUE:
+            return depth - 10
+        elif len(self.pawns) == 0 or depth >= MAX_DEPTH:
+            return 0
+
+        if maximizing_player:
+            max_eval = float('-inf')
+            for row in range(RC):
+                for col in range(RC):
+                    if board[row][col] == [] or board[row][col][-1].color != RED:
+                        new_board = self.copy_board()
+                        new_pawn_list = [p for p in self.pawns]
+                        selected_pawn = new_pawn_list.pop()
+                        new_board[row][col].append(selected_pawn)
+                        selected_pawn.set_board_position(row, col)
+                        eval = self.computer_algorithm(new_board, depth + 1, False, alpha, beta)
+                        max_eval = max(max_eval, eval)
+                        alpha = max(alpha, eval)
+                        new_pawn_list.append(selected_pawn)
+                        if beta <= alpha:
+                            break
+            return max_eval
+        else:
+            min_eval = float('inf')
+            for row in range(RC):
+                for col in range(RC):
+                    if board[row][col] == [] or board[row][col][-1].color != BLUE:
+                        new_board = self.copy_board()
+                        new_pawn_list = [p for p in self.pawns]
+                        selected_pawn = new_pawn_list.pop()
+                        new_board[row][col].append(selected_pawn)
+                        selected_pawn.set_board_position(row, col)
+                        eval = self.computer_algorithm(new_board, depth + 1, True, alpha, beta)
+                        min_eval = min(min_eval, eval)
+                        beta = min(beta, eval)
+                        if beta <= alpha:
+                            break
+            return min_eval
+
+
+
+    def computer_move(self):
+        best_eval = float('-inf')
+        best_move = None
+
+        for pawn in self.pawns:
+            if pawn.color == RED:
+                for row in range(RC):
+                    for col in range(RC):
+                        if self.board[row][col] == [] or self.board[row][col][-1].color != RED:
+                            new_board = self.copy_board()
+                            new_pawn_list = [p for p in self.pawns]
+                            selected_pawn = new_pawn_list.pop(new_pawn_list.index(pawn))
+                            new_board[row][col].append(selected_pawn)
+                            selected_pawn.set_board_position(row, col)
+                            eval = self.computer_algorithm(new_board, 0, False)
+                            new_pawn_list.append(selected_pawn)  # Restore the popped pawn
+                            if eval > best_eval and (selected_pawn, (row, col)) not in self.possible_moves:
+                                best_eval = eval
+                                best_move = (selected_pawn, (row, col))
+
+        return best_move
+
+
+
+    def update_from_ai(self, pawn, move):
+        if pawn and move:
+            row, col = move
+            if pawn.row != -1 and pawn.col != -1:
+                if self.board[pawn.row][pawn.col]:
+                    self.board[pawn.row][pawn.col].pop()
+            self.board[row][col].append(pawn)
+            pawn.set_board_position(row, col)
+            pawn.set_position(75 + col * SQUARE + SQUARE // 2, 175 + row * SQUARE + SQUARE // 2)
+            pawn.unselect()
+            self.possible_moves = []
+            self.switch_turn()
+
+    def set_game_mode(self, game_mode):
+        self.game_mode = game_mode
+
+    def update(self, pos):
+        if self.game_mode == "1vs1":
+            self.click_board(pos)
+            self.click_pawn(pos)
+            self.find_possible_moves()
+            winner = self.check_winner()
+            if winner is not None:
+                self.winner(self.screen, winner)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if self.home_button.checkMouseInput(pygame.mouse.get_pos()):
+                            current_screen = "HOME"
+                            self.reset()
+                        elif self.quit_button.checkMouseInput(pygame.mouse.get_pos()):
+                            pygame.quit()
+                            sys.exit()
+        elif self.game_mode == "vs_computer":
+            if self.turn == BLUE:
+                self.click_board(pos)
+                self.click_pawn(pos)
+                self.find_possible_moves()
+            elif self.turn == RED:
+                computer_pawn, computer_move = self.computer_move()
+                self.update_from_ai(computer_pawn, computer_move)
