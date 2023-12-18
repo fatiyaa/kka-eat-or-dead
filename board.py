@@ -376,37 +376,47 @@ class Board:
             button.hoverColor(pygame.mouse.get_pos())
             button.update(screen)
     
-    # def evaluate(self, board, is_max):
-    #     pawns_red = []
-    #     pawns_blue = []
-
-    #     for row in board:
-    #         for cell in row:
-    #             if cell == []:
-    #                 continue
-    #             if cell[-1].color == BLUE:
-    #                 pawns_blue.append(cell[-1])
-    #             if cell[-1].color == RED:
-    #                 pawns_red.append(cell[-1])
+    def evaluate(self, board, is_max):
+        pawns_red = []
+        pawns_blue = []
+        blue_point = 0
+        red_point = 0
+        total_point = 0
         
-    #     # print ("red ", len(pawns_red), " blue ", pawns_blue)
+        for row in board:
+            for cell in row:
+                if cell == []:
+                    continue
+                else:
+                    for i in range(len(cell)):
+                        total_point+=cell[i].value
+                if cell[-1].color == BLUE:
+                    pawns_blue.append(cell[-1])
+                    blue_point+=cell[-1].value
+                if cell[-1].color == RED:
+                    pawns_red.append(cell[-1])
+                    red_point+=cell[-1].value
         
-    #     if is_max:    
-    #         return len(pawns_red)/(len(pawns_red)+len(pawns_blue))
-    #     else:
-    #         return - (len(pawns_blue)/(len(pawns_red)+len(pawns_blue)))
+        # print ("red ", len(pawns_red), " blue ", pawns_blue)
+        
+        if is_max:
+            print("eval max ", red_point/total_point)    
+            return red_point/total_point
+        else:
+            print("eval min ", blue_point/total_point) 
+            return - (blue_point/total_point)
      
     def minimax(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True):
         winner = self.check_winner(board)
             
         
-        if  winner != None or depth == 1:
+        if  winner != None or depth == 0:
             if winner is RED:
                 return [1, board, pawns_blue, pawns_red]
             elif winner is BLUE:
                 return [-1, board, pawns_blue, pawns_red]
             else:
-                return [0, board, pawns_blue, pawns_red]
+                return [self.evaluate(board, is_max), board, pawns_blue, pawns_red]
             
         if is_max:
             max_eval = float('-inf')
