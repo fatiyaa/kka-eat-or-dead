@@ -43,8 +43,10 @@ while run:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if howtoplay.friends_button.checkMouseInput(pygame.mouse.get_pos()):
+                    gameboard.isAI(False)
                     current_screen = "GAME"
                 if howtoplay.computer_button.checkMouseInput(pygame.mouse.get_pos()):
+                    gameboard.isAI(True)
                     current_screen = "GAME"
 
     elif current_screen == "GAME":

@@ -13,7 +13,8 @@ class Board:
             [[], [], []],
             [[], [], []]
         ]
-        self.pawns = []
+        self.pawns_blue = []
+        self.pawns_red = []
         self.add_pawn()          
         self.selected_pawn: Pawn = None
         self.possible_moves = []
@@ -25,11 +26,15 @@ class Board:
             [[], [], []],
             [[], [], []]
         ]
-        self.pawns = []
+        self.pawns_blue = []
+        self.pawns_red = []
         self.add_pawn()              
         self.selected_pawn: Pawn = None
         self.possible_moves = []
         self.turn = BLUE
+        
+    def isAI(self, ai):
+        self.ai = ai
         
     def draw(self):
         self.draw_board()
@@ -40,14 +45,22 @@ class Board:
 
     def add_pawn(self):
         for i in range(75, SCREEN_WIDTH-75, 90):
-            self.pawns.append(Pawn((i-75)//90 + 1, RED, i+45, 85, f"assets/r{(i // 90) % 5 + 1}.png"))
-            self.pawns.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90, f"assets/b{(i // 90) % 5 + 1}.png"))
+            self.pawns_red.append(Pawn((i-75)//90 + 1, RED, i+45, 85, f"assets/r{(i // 90) % 5 + 1}.png"))
+            self.pawns_blue.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90, f"assets/b{(i // 90) % 5 + 1}.png"))
 
     def draw_pawn(self):
-        for pawn in self.pawns:
-            if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col] != [] and self.board[pawn.row][pawn.col][-1] != pawn:
-                continue
+
+        for pawn in self.pawns_blue:
             pawn.draw(self.screen)
+            
+        for pawn in self.pawns_red:
+            pawn.draw(self.screen)
+            
+        for row in self.board:
+            for cell in row:
+                if cell == []:
+                    continue
+                cell[-1].draw(self.screen)
 
     def draw_board(self):
         for row in range(RC):
@@ -65,13 +78,31 @@ class Board:
     def update(self, pos):
         self.click_board(pos)
         self.click_pawn(pos)
-        self.find_possible_moves()
-        print(self.board)
+        if self.selected_pawn:
+            color, value = self.selected_pawn.color, self.selected_pawn.value
+            self.possible_moves = self.find_possible_moves(self.board, color, value)
+        else:
+            self.possible_moves = []
             
     def click_pawn(self, pos):
         (x, y) = pos
         selecting = False
-        for pawn in self.pawns:
+        
+        pawn_list = []
+        
+        if self.turn == BLUE:
+            pawn_list.extend(self.pawns_blue)
+        else:
+            pawn_list.extend(self.pawns_red)
+            
+        for row in self.board:
+            for cell in row:
+                if cell == []:
+                    continue
+                if cell[-1].color == self.turn:
+                    pawn_list.append(cell[-1])
+            
+        for pawn in pawn_list:
             if pawn.color != self.turn:
                 continue
             
@@ -104,9 +135,16 @@ class Board:
             dy = y - board_y
             
             if (dx >= 0 and dx <= SQUARE) and (dy >= 0 and dy <= SQUARE):
+                
                 if self.selected_pawn.row != -1 and self.selected_pawn.col != -1:
                     self.board[self.selected_pawn.row][self.selected_pawn.col].pop()
                 self.board[row][col].append(self.selected_pawn)
+                
+                if self.selected_pawn in self.pawns_blue:
+                    self.pawns_blue.remove(self.selected_pawn)
+                elif self.selected_pawn in self.pawns_red: 
+                    self.pawns_red.remove(self.selected_pawn)
+                    
                 self.selected_pawn.set_board_position(row, col)
                 self.selected_pawn.set_position(board_x + SQUARE//2, board_y + SQUARE//2)
                 self.selected_pawn.unselect()
@@ -116,18 +154,34 @@ class Board:
                 return
                     
         
-    def find_possible_moves(self):
-        if not self.selected_pawn:
-            self.possible_moves = []
-            return
-        
-        self.possible_moves = []
+    def find_possible_moves(self, board, color, value):
+        possible_moves = []
         for row in range(RC):
             for col in range(RC):
-                if self.board[row][col] != [] and self.board[row][col][-1].color == self.turn:
+                if board[row][col] != [] and board[row][col][-1].color == color:
                     continue
-                if self.board[row][col] == [] or self.board[row][col][-1].value < self.selected_pawn.value:
-                    self.possible_moves.append((row, col))
+                if board[row][col] == [] or board[row][col][-1].value < value:
+                    possible_moves.append((row, col))
+                    
+        return possible_moves
+    
+    def get_possible_boards(self, board, pawns: list[Pawn]):
+        possible_boards = []
+        
+        for pawn in pawns:
+            possible_moves = self.find_possible_moves(board, pawn.color, pawn.value)
+            
+            for move in possible_moves:
+                (row, col) = move
+                temp_board = [
+                    [[], [], []],
+                    [[], [], []],
+                    [[], [], []]
+                ]
+                temp_board.extend(board)
+                temp_board[row][col].append(pawn)
+                possible_boards.append(temp_board)
+        return possible_boards
                     
     def draw_possible_moves(self):
         if self.possible_moves == []:
@@ -138,10 +192,22 @@ class Board:
             pygame.draw.rect(self.screen, GREEN, (col*SQUARE +75, row*SQUARE+175, SQUARE, SQUARE))
             
     def switch_turn(self):
+        pawns = []
         if self.turn == BLUE:
+            pawns.extend(self.pawns_red)
             self.turn = RED
         else:
+            pawns.extend(self.pawns_blue)
             self.turn = BLUE
+            
+        for row in self.board:
+            for cell in row:
+                if cell == []:
+                    continue
+                if cell[-1].color == self.turn:
+                    pawns.append(cell[-1])
+                
+        print(self.get_possible_boards(self.board, pawns))
 
     def draw_turn(self):
         if self.selected_pawn is not None:
