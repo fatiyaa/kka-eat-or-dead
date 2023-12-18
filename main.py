@@ -4,6 +4,7 @@ from cons import *
 from home import Home
 from board import Board
 from howtoplay import HowToPlay
+from minimaxAI import AI
 
 
 pygame.init()
@@ -19,7 +20,9 @@ clock = pygame.time.Clock()
 home = Home(screen)
 gameboard = Board(screen)
 howtoplay = HowToPlay(screen)
-current_screen = "HOME"
+aiNIH = AI(screen)
+# current_screen = "GAME"
+current_screen = "AI"
 
 while run:
     clock.tick(60)
@@ -68,6 +71,17 @@ while run:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 gameboard.update(pygame.mouse.get_pos())
 
+    elif current_screen == "AI":
+        aiNIH.draw()
+        winner = aiNIH.check_winner()
+        if winner is not None:
+            aiNIH.winner(screen, winner)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                aiNIH.update(pygame.mouse.get_pos())
+                
     pygame.display.update()
             
 pygame.quit()
