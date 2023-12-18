@@ -2,7 +2,7 @@ import pygame
 from cons import *
 
 class Pawn:
-    def __init__(self, val, color, x, y, image_path):
+    def __init__(self, val, color, x, y):
         self.x = x
         self.y = y
         self.row = -1
@@ -11,7 +11,7 @@ class Pawn:
         self.color = color
         # self.font = pygame.font.SysFont(None, 30)
         self.selected = False
-        self.image = pygame.image.load(image_path)
+        self.image = pygame.image.load( f"assets/{'r' if self.color == RED else 'b'}{self.value}.png")
         self.original_image = self.image
         self.enlarged_image = pygame.transform.scale(self.original_image, (1.2 * PAWN_RAD, 1.2 * PAWN_RAD))
         self.enlarged_size = PAWN_RAD

@@ -51,7 +51,7 @@ while run:
 
     elif current_screen == "GAME":
         gameboard.draw()
-        winner = gameboard.check_winner()
+        winner = gameboard.check_winner_board()
         if winner is not None:
             gameboard.winner(screen, winner)
             for event in pygame.event.get():
