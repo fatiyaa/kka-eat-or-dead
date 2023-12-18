@@ -43,8 +43,10 @@ while run:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if howtoplay.friends_button.checkMouseInput(pygame.mouse.get_pos()):
+                    gameboard.isAI(False)
                     current_screen = "GAME"
                 if howtoplay.computer_button.checkMouseInput(pygame.mouse.get_pos()):
+                    gameboard.isAI(True)
                     current_screen = "GAME"
 
     elif current_screen == "GAME":
@@ -61,6 +63,19 @@ while run:
                         gameboard.reset()
                     elif gameboard.quit_button.checkMouseInput(pygame.mouse.get_pos()):
                         run = False
+        
+        # if gameboard.turn == RED:
+        #     if gameboard.ai:
+        #             # self.bestMove()
+        #             _, best_board = gameboard.minimax(gameboard.board, 0, True)
+        #             print("best_board ", best_board)
+        #             gameboard.board = best_board
+        #             for row in range(RC):
+        #                 for col in range(RC):
+        #                     if len(gameboard.board[row][col]) != 0:
+        #                         gameboard.board[row][col][-1].row = row
+        #                         gameboard.board[row][col][-1].col = col
+        #     gameboard.switch_turn()
                 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

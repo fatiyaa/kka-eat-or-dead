@@ -1,5 +1,6 @@
 import pygame
 from cons import *
+import pickle
 
 class Pawn:
     def __init__(self, val, color, x, y, image_path):
@@ -9,7 +10,7 @@ class Pawn:
         self.col = -1
         self.value = val
         self.color = color
-        self.font = pygame.font.SysFont(None, 30)
+        # self.font = pygame.font.SysFont(None, 30)
         self.selected = False
         self.image = pygame.image.load(image_path)
         self.original_image = self.image
@@ -32,7 +33,7 @@ class Pawn:
     def unselect(self):
         self.selected = False
     
-    def draw(self, screen: pygame.Surface):
+    def draw(self, screen):
         if self.selected:
             # Smoothly zoom in when selected
             if self.enlarged_size < 1.2 * PAWN_RAD:
@@ -48,3 +49,18 @@ class Pawn:
         screen.blit(self.enlarged_image, (self.x - self.enlarged_size, self.y - self.enlarged_size))
         #text = self.font.render(str(self.value), True, WHITE)
         #screen.blit(text, text.get_rect(center=(self.x, self.y)))
+
+    def __repr__(self) -> str:
+        if(self.color == RED):
+            name = "red "+ str(self.value)
+        else:
+            name = "blue "+ str(self.value)
+        return name
+    
+    # def deepcopy(self):
+    #     # Pickle and unpickle the pysurface object to create an independent copy
+    #     pickled_pysurface = pickle.dumps(self.screen)
+    #     copied_pysurface = pickle.loads(pickled_pysurface)
+
+    #     # Create a new Pawn instance with the copied pysurface object
+    #     return Pawn(copied_pysurface)
