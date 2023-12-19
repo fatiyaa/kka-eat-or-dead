@@ -2,6 +2,7 @@ import pygame
 from cons import *
 from pawn import Pawn
 from button import Button
+import time
 
 
 class Board:
@@ -241,7 +242,17 @@ class Board:
             self.turn = RED
             if self.ai:
                 # self.bestMove()
-                evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
+                start = time.time()
+                # MINIMAX
+                # algo = "minimax "
+                # evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
+                
+                # ALPHA BETA PRUNING
+                algo = "alpha betha pruning "
+                evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
+                
+                end = time.time()
+                print( algo, f"time: {end-start}")
                 # print("evaluation ", evaluation)
                 # print("best_board ", best_board[0], best_board[1], best_board[2], sep='\n')
                 # print("pawns_blue ", pawns_blue)
@@ -400,10 +411,10 @@ class Board:
         # print ("red ", len(pawns_red), " blue ", pawns_blue)
         
         if is_max:
-            print("eval max ", red_point/total_point)    
+            # print("eval max ", red_point/total_point)    
             return red_point/total_point
         else:
-            print("eval min ", blue_point/total_point) 
+            # print("eval min ", blue_point/total_point) 
             return - (blue_point/total_point)
      
     def minimax(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True):
@@ -415,6 +426,8 @@ class Board:
                 return [1, board, pawns_blue, pawns_red]
             elif winner is BLUE:
                 return [-1, board, pawns_blue, pawns_red]
+            elif winner is GREEN:
+                return [0, board, pawns_blue, pawns_red]
             else:
                 return [self.evaluate(board, is_max), board, pawns_blue, pawns_red]
             
@@ -440,6 +453,61 @@ class Board:
             for move, blues, _ in self.get_possible_boards(board, best_pawns_blue, pawns_red, BLUE):
                 evaluation = self.minimax(move, best_pawns_blue, pawns_red, depth-1, True)[0]
                 min_eval = min(evaluation, min_eval)
+                if evaluation == min_eval:
+                    best_move = move
+                    best_pawns_blue  = blues
+        
+            return [min_eval, best_move, best_pawns_blue, pawns_red]
+        
+        
+    def alphabetha(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True, alpha: float = float('-inf'), beta: float = float('inf')):
+        winner = self.check_winner(board)
+            
+        
+        if  winner != None or depth == 0:
+            if winner is RED:
+                return [1, board, pawns_blue, pawns_red]
+            elif winner is BLUE:
+                return [-1, board, pawns_blue, pawns_red]
+            elif winner is GREEN:
+                return [0, board, pawns_blue, pawns_red]
+            else:
+                return [self.evaluate(board, is_max), board, pawns_blue, pawns_red]
+            
+        if is_max:
+            max_eval = float('-inf')
+            best_move = None
+            best_pawns_red = pawns_red
+            
+            for move, _, reds in self.get_possible_boards(board, pawns_blue, best_pawns_red, RED):
+                evaluation = self.alphabetha(move, pawns_blue, best_pawns_red, depth-1, False, alpha, beta)[0]
+                max_eval = max(evaluation, max_eval)
+                
+                if max_eval>beta:
+                    break
+                
+                alpha = max(alpha, max_eval)
+                
+                if evaluation == max_eval:
+                    best_move = move
+                    best_pawns_red  = reds
+        
+            return [max_eval, best_move, pawns_blue, best_pawns_red]
+        
+        else :
+            min_eval = float('inf')
+            best_move = None
+            best_pawns_blue = pawns_blue
+            
+            for move, blues, _ in self.get_possible_boards(board, best_pawns_blue, pawns_red, BLUE):
+                evaluation = self.alphabetha(move, best_pawns_blue, pawns_red, depth-1, True, alpha, beta)[0]
+                min_eval = min(evaluation, min_eval)
+                
+                if min_eval < alpha:
+                    break
+                
+                beta = min(beta, min_eval)
+                
                 if evaluation == min_eval:
                     best_move = move
                     best_pawns_blue  = blues
