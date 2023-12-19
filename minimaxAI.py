@@ -268,6 +268,7 @@ class AI:
             
             row, col = best_move
             print(self.selected_pawn)
+            self.find_in_board()
             board_x = (75 + col * SQUARE)
             board_y = (175 + row * SQUARE)
             self.board[row][col].append(self.selected_pawn)
@@ -337,3 +338,10 @@ class AI:
                         self.board[row][col].pop()
                         best_score = min(score, best_score)
             return best_score
+
+    def find_in_board(self):
+        for row in range(RC):
+            for col in range(RC):
+                if self.board[row][col] != [] and self.board[row][col][-1].color == self.turn and self.board[row][col][-1].value == self.selected_pawn.value:
+                    self.board[row][col].pop()
+                
