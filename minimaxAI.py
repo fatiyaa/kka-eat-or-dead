@@ -243,31 +243,29 @@ class AI:
             if pawn.color == RED:
                 self.selected_pawn = pawn
                 self.selected_pawn.select()
-                print("PM", end=" ")
-                print(pawn)
+                print(f"\033[93m PM {pawn}\033[0m")
                 self.find_possible_moves()
                 print(self.possible_moves)
                 for move in self.possible_moves:
                     (row, col) = move
-                    print (row, col)                    
-
                     self.board[row][col].append(pawn)
-                    print("BestMove = ", end="")
-                    print(self.board)
+                    print(f"BestMove = {self.board}")
                     score = self.minimax(0, False)
                     self.board[row][col].pop()
-                    print(f"\033[91m SCORE {score}\033[0m")
-
+                    print(f"\033[91m SCORE: {score} | BESTSCORE {best_score}\033[0m")
 
                     if score > best_score:
+                        print("ganti")
                         best_score = score
                         best_move = (row, col)
+                        best_move_pawn = pawn
                 print("")
 
         if best_move:
-            
             row, col = best_move
-            print(self.selected_pawn)
+            print(best_move_pawn)
+            self.selected_pawn = best_move_pawn
+            print("YANG GERAK : ",self.selected_pawn)
             self.find_in_board()
             board_x = (75 + col * SQUARE)
             board_y = (175 + row * SQUARE)
@@ -281,7 +279,7 @@ class AI:
     def minimax(self, depth, is_maximizing):
         result = self.check_winner()
 
-        if result is not None or depth == 2:
+        if result is not None or depth == 4:
             if result == RED:
                 return 1
             elif result == BLUE:
@@ -295,46 +293,25 @@ class AI:
                 if pawn.color == RED:
                     self.selected_pawn = pawn
                     self.selected_pawn.select()
-                    # print("PMR", end=" ")
-                    # print(pawn, end=" ")
-                    # print(f"{{{depth}}}")
                     self.find_possible_moves()
-                    # print("++RED ", end="")
-                    # print(self.possible_moves)
                     for move in self.possible_moves:
                         (row, col) = move
-                    
                         self.board[row][col].append(self.selected_pawn)
                         score = self.minimax(depth + 1, False)
-                        # score =1
                         self.board[row][col].pop()
                         best_score = max(score, best_score)
             return best_score
         else:
             best_score = float('inf')
-            q=0
             for pawn in self.pawns:
                 if pawn.color == BLUE:
                     self.selected_pawn = pawn
                     self.selected_pawn.select()
-                    # print("PMB", end=" ")
-                    # print(pawn, end=" ")
-                    # print(f"{{{depth}}}")
-
-                    # print (q)
-                    # q+=1
                     self.find_possible_moves()
-                    # print("==BLUE ", end="")
-                    # print(self.possible_moves)
-
                     for move in self.possible_moves:
                         (row, col) = move
-                    
                         self.board[row][col].append(self.selected_pawn)
-                        # print(self.board)
-
                         score = self.minimax(depth + 1, True)
-                        # score = -1
                         self.board[row][col].pop()
                         best_score = min(score, best_score)
             return best_score
