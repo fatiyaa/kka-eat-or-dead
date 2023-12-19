@@ -63,9 +63,13 @@ class AI:
                 pygame.draw.rect(self.screen, RED, (col*SQUARE +75-4, row*SQUARE+175-4, SQUARE+4, SQUARE+4), 4)
          
     def update(self, pos):
+        # if self.turn == BLUE:
         self.click_board(pos)
         self.click_pawn(pos)
+        print("\033[92m"+ color_names.get(self.turn, self.turn)+" TURNS\033[0m" )
         self.find_possible_moves()
+        # print(self.selected_pawn)
+        # print(self.possible_moves)
         print(self.board)
             
     def click_pawn(self, pos):
@@ -140,6 +144,7 @@ class AI:
     def switch_turn(self):
         if self.turn == BLUE:
             self.turn = RED
+            self.bestMove()
         else:
             self.turn = BLUE
 
@@ -178,6 +183,7 @@ class AI:
         row = 0
         winner = None
         
+        # Horizontal
         for a in range(RC):
             if self.pawn_existed(self.board[a][col],self.board[a][col+1], self.board[a][col+2]) :
                 if self.pawn_in_row(self.board[a][col][-1].color, self.board[a][col+1][-1].color, self.board[a][col+2][-1].color):
@@ -186,6 +192,7 @@ class AI:
                     else:
                         return GREEN
                     
+        # Vertical
         for b in range(RC):
             if self.pawn_existed(self.board[row][b], self.board[row+1][b], self.board[row+2][b]) :
                 if self.pawn_in_row(self.board[row][b][-1].color, self.board[row+1][b][-1].color, self.board[row+2][b][-1].color):
@@ -194,6 +201,7 @@ class AI:
                     else:
                         return GREEN
                 
+        # Diagonal        
         if self.pawn_existed(self.board[row][col], self.board[row+1][col+1], self.board[row+2][col+2]) :
                 if self.pawn_in_row(self.board[row][col][-1].color, self.board[row+1][col+1][-1].color, self.board[row+2][col+2][-1].color):
                     if winner == None or winner == self.board[row][col][-1].color:
@@ -226,3 +234,106 @@ class AI:
         for button in [self.home_button, self.quit_button]:
             button.hoverColor(pygame.mouse.get_pos())
             button.update(screen)
+
+
+    def bestMove(self):
+        best_score = float('-inf')
+        best_move = None
+        for pawn in self.pawns:
+            if pawn.color == RED:
+                self.selected_pawn = pawn
+                self.selected_pawn.select()
+                print("PM", end=" ")
+                print(pawn)
+                self.find_possible_moves()
+                print(self.possible_moves)
+                for move in self.possible_moves:
+                    (row, col) = move
+                    print (row, col)                    
+
+                    self.board[row][col].append(pawn)
+                    print("BestMove = ", end="")
+                    print(self.board)
+                    score = self.minimax(0, False)
+                    self.board[row][col].pop()
+                    print(f"\033[91m SCORE {score}\033[0m")
+
+
+                    if score > best_score:
+                        best_score = score
+                        best_move = (row, col)
+                print("")
+
+        if best_move:
+            
+            row, col = best_move
+            print(self.selected_pawn)
+            board_x = (75 + col * SQUARE)
+            board_y = (175 + row * SQUARE)
+            self.board[row][col].append(self.selected_pawn)
+            self.selected_pawn.set_board_position(row, col)
+            self.selected_pawn.set_position(board_x + SQUARE//2, board_y + SQUARE//2)
+            self.selected_pawn.unselect()
+            self.possible_moves = []
+            self.switch_turn()
+
+    def minimax(self, depth, is_maximizing):
+        result = self.check_winner()
+
+        if result is not None or depth == 2:
+            if result == RED:
+                return 1
+            elif result == BLUE:
+                return -1
+            else:
+                return 0
+        
+        if is_maximizing:
+            best_score = float('-inf')
+            for pawn in self.pawns:
+                if pawn.color == RED:
+                    self.selected_pawn = pawn
+                    self.selected_pawn.select()
+                    # print("PMR", end=" ")
+                    # print(pawn, end=" ")
+                    # print(f"{{{depth}}}")
+                    self.find_possible_moves()
+                    # print("++RED ", end="")
+                    # print(self.possible_moves)
+                    for move in self.possible_moves:
+                        (row, col) = move
+                    
+                        self.board[row][col].append(self.selected_pawn)
+                        score = self.minimax(depth + 1, False)
+                        # score =1
+                        self.board[row][col].pop()
+                        best_score = max(score, best_score)
+            return best_score
+        else:
+            best_score = float('inf')
+            q=0
+            for pawn in self.pawns:
+                if pawn.color == BLUE:
+                    self.selected_pawn = pawn
+                    self.selected_pawn.select()
+                    # print("PMB", end=" ")
+                    # print(pawn, end=" ")
+                    # print(f"{{{depth}}}")
+
+                    # print (q)
+                    # q+=1
+                    self.find_possible_moves()
+                    # print("==BLUE ", end="")
+                    # print(self.possible_moves)
+
+                    for move in self.possible_moves:
+                        (row, col) = move
+                    
+                        self.board[row][col].append(self.selected_pawn)
+                        # print(self.board)
+
+                        score = self.minimax(depth + 1, True)
+                        # score = -1
+                        self.board[row][col].pop()
+                        best_score = min(score, best_score)
+            return best_score
