@@ -43,15 +43,22 @@ while run:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if howtoplay.friends_button.checkMouseInput(pygame.mouse.get_pos()):
-                    gameboard.isAI(False)
                     current_screen = "GAME"
-                if howtoplay.computer_button.checkMouseInput(pygame.mouse.get_pos()):
+                elif howtoplay.computer_button.checkMouseInput(pygame.mouse.get_pos()):
                     gameboard.isAI(True)
-                    current_screen = "GAME"
+                    howtoplay.active_choose_screen = True
+                elif howtoplay.active_choose_screen:
+                    if howtoplay.minimax_button.checkMouseInput(pygame.mouse.get_pos()):
+                        gameboard.algorithm = "MINIMAX"
+                        current_screen = "GAME"
+                    if howtoplay.alpaBeta_button.checkMouseInput(pygame.mouse.get_pos()):
+                        gameboard.algorithm = "ALPA-BETA"
+                        current_screen = "GAME"
+
 
     elif current_screen == "GAME":
         gameboard.draw()
-        winner = gameboard.check_winner_board()
+        winner = gameboard.check_winner()
         if winner is not None:
             gameboard.winner(screen, winner)
             for event in pygame.event.get():
@@ -75,5 +82,3 @@ while run:
 pygame.quit()
 
     
-    
-        
