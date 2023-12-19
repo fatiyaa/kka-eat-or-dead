@@ -51,7 +51,7 @@ class HowToPlay:
 
         font = pygame.font.SysFont(None, 50)
         self.minimax_button = Button(100, SCREEN_HEIGHT//2+40, 'MINIMAX', font, (0, 0, 0), BLUE, LIGHT_BLUE)
-        self.alpaBeta_button = Button(SCREEN_WIDTH//2, SCREEN_HEIGHT//2+40, 'ALPA BETA', font, (0, 0, 0), RED, LIGHT_RED)
+        self.alpaBeta_button = Button(SCREEN_WIDTH//2, SCREEN_HEIGHT//2+40, 'ALPHA-BETA', font, (0, 0, 0), RED, LIGHT_RED)
 
         for button in [self.minimax_button, self.alpaBeta_button]:
             button.hoverColor(pygame.mouse.get_pos())

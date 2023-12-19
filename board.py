@@ -142,13 +142,13 @@ class Board:
                 
                 if self.selected_pawn.row != -1 and self.selected_pawn.col != -1:
                     self.board[self.selected_pawn.row][self.selected_pawn.col].pop()
-                self.board[row][col].append(self.selected_pawn)
                 
                 if self.selected_pawn in self.pawns_blue:
                     self.pawns_blue.remove(self.selected_pawn)
                 elif self.selected_pawn in self.pawns_red: 
                     self.pawns_red.remove(self.selected_pawn)
                     
+                self.board[row][col].append(self.selected_pawn)
                 self.selected_pawn.set_board_position(row, col)
                 self.selected_pawn.set_position(board_x + SQUARE//2, board_y + SQUARE//2)
                 self.selected_pawn.unselect()
@@ -261,10 +261,10 @@ class Board:
                 # print("best_board ", best_board[0], best_board[1], best_board[2], sep='\n')
                 # print("pawns_blue ", pawns_blue)
                 # print("pawns_red ", pawns_red)
-                if evaluation > -1:
-                    self.board = best_board
-                    self.pawns_blue = pawns_blue
-                    self.pawns_red = pawns_red
+
+                self.board = best_board
+                self.pawns_blue = pawns_blue
+                self.pawns_red = pawns_red
                 # for row in range(RC):
                 #     for col in range(RC):
                 #         if len(self.board[row][col]) != 0:
@@ -487,7 +487,7 @@ class Board:
                 evaluation = self.alphabetha(move, pawns_blue, best_pawns_red, depth-1, False, alpha, beta)[0]
                 max_eval = max(evaluation, max_eval)
                 
-                if max_eval>beta:
+                if max_eval>=beta:
                     break
                 
                 alpha = max(alpha, max_eval)
