@@ -52,13 +52,13 @@ while run:
                         gameboard.algorithm = "MINIMAX"
                         current_screen = "GAME"
                     if howtoplay.alpaBeta_button.checkMouseInput(pygame.mouse.get_pos()):
-                        gameboard.algorithm = "ALPA-BETA"
+                        gameboard.algorithm = "ALPHA-BETA"
                         current_screen = "GAME"
 
 
     elif current_screen == "GAME":
         gameboard.draw()
-        winner = gameboard.check_winner()
+        winner = gameboard.check_winner_board()
         if winner is not None:
             gameboard.winner(screen, winner)
             for event in pygame.event.get():
@@ -68,6 +68,7 @@ while run:
                     if gameboard.home_button.checkMouseInput(pygame.mouse.get_pos()):
                         current_screen = "HOME"
                         gameboard.reset()
+                        howtoplay.active_choose_screen = False
                     elif gameboard.quit_button.checkMouseInput(pygame.mouse.get_pos()):
                         run = False
                 

@@ -20,6 +20,7 @@ class Board:
         self.selected_pawn: Pawn = None
         self.possible_moves = []
         self.turn = BLUE
+        self.ai = False
         
     def reset(self):
         self.board = [
@@ -243,13 +244,16 @@ class Board:
             if self.ai:
                 # self.bestMove()
                 start = time.time()
+                
                 # MINIMAX
-                algo = "minimax "
-                evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
+                if self.algorithm == "MINIMAX":
+                    algo = "minimax "
+                    evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
                 
                 # ALPHA BETA PRUNING
-                # algo = "alpha betha pruning "
-                # evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
+                if self.algorithm == "ALPHA-BETA":
+                    algo = "alpha betha pruning "
+                    evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
                 
                 end = time.time()
                 print( algo, f"time: {end-start}")
