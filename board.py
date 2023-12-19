@@ -378,9 +378,9 @@ class Board:
         font = pygame.font.SysFont(None, 100)
         text = font.render("IT'S A TIE", True, ORANGE)
         if win == RED:
-            text = font.render('RED IS WIN', True, RED)
+            text = font.render('RED WINS', True, RED)
         if win == BLUE:
-            text = font.render('BLUE IS WIN', True, BLUE)
+            text = font.render('BLUE WINS', True, BLUE)
         screen.blit(text, text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 20)))
 
         font = pygame.font.SysFont(None, 50)
