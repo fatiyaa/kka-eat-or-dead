@@ -244,12 +244,12 @@ class Board:
                 # self.bestMove()
                 start = time.time()
                 # MINIMAX
-                # algo = "minimax "
-                # evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
+                algo = "minimax "
+                evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
                 
                 # ALPHA BETA PRUNING
-                algo = "alpha betha pruning "
-                evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
+                # algo = "alpha betha pruning "
+                # evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
                 
                 end = time.time()
                 print( algo, f"time: {end-start}")
