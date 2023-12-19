@@ -2,6 +2,7 @@ import pygame
 from cons import *
 from pawn import Pawn
 from button import Button
+import time
 
 
 class Board:
@@ -13,7 +14,8 @@ class Board:
             [[], [], []],
             [[], [], []]
         ]
-        self.pawns = []
+        self.pawns_blue = []
+        self.pawns_red = []
         self.add_pawn()          
         self.selected_pawn: Pawn = None
         self.possible_moves = []
@@ -25,11 +27,15 @@ class Board:
             [[], [], []],
             [[], [], []]
         ]
-        self.pawns = []
+        self.pawns_blue = []
+        self.pawns_red = []
         self.add_pawn()              
         self.selected_pawn: Pawn = None
         self.possible_moves = []
         self.turn = BLUE
+        
+    def isAI(self, ai):
+        self.ai = ai
         
     def draw(self):
         self.draw_board()
@@ -40,14 +46,22 @@ class Board:
 
     def add_pawn(self):
         for i in range(75, SCREEN_WIDTH-75, 90):
-            self.pawns.append(Pawn((i-75)//90 + 1, RED, i+45, 85, f"assets/r{(i // 90) % 5 + 1}.png"))
-            self.pawns.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90, f"assets/b{(i // 90) % 5 + 1}.png"))
+            self.pawns_red.append(Pawn((i-75)//90 + 1, RED, i+45, 85))
+            self.pawns_blue.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90))
 
     def draw_pawn(self):
-        for pawn in self.pawns:
-            if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col] != [] and self.board[pawn.row][pawn.col][-1] != pawn:
-                continue
+
+        for pawn in self.pawns_blue:
             pawn.draw(self.screen)
+            
+        for pawn in self.pawns_red:
+            pawn.draw(self.screen)
+            
+        for row in self.board:
+            for cell in row:
+                if cell == []:
+                    continue
+                cell[-1].draw(self.screen)
 
     def draw_board(self):
         for row in range(RC):
@@ -63,20 +77,40 @@ class Board:
                 pygame.draw.rect(self.screen, RED, (col*SQUARE +75-4, row*SQUARE+175-4, SQUARE+4, SQUARE+4), 4)
          
     def update(self, pos):
-        self.click_board(pos)
-        self.click_pawn(pos)
-        self.find_possible_moves()
-        print(self.board)
+        if self.turn == BLUE or self.ai == False:
+            self.click_board(pos)
+            self.click_pawn(pos)
+            if self.selected_pawn:
+                color, value = self.selected_pawn.color, self.selected_pawn.value
+                self.possible_moves = self.find_possible_moves(self.board, color, value)
+            else:
+                self.possible_moves = []
+        
             
     def click_pawn(self, pos):
         (x, y) = pos
         selecting = False
-        for pawn in self.pawns:
+        
+        pawn_list = []
+        
+        if self.turn == BLUE:
+            pawn_list.extend(self.pawns_blue)
+        else:
+            pawn_list.extend(self.pawns_red)
+            
+        for row in self.board:
+            for cell in row:
+                if cell == []:
+                    continue
+                if cell[-1].color == self.turn:
+                    pawn_list.append(cell[-1])
+            
+        for pawn in pawn_list:
             if pawn.color != self.turn:
                 continue
             
-            if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col][-1] != pawn:
-                continue
+            # if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col][-1] != pawn:
+            #     continue
             
             if not pawn.is_collide(x, y):
                 continue
@@ -104,9 +138,16 @@ class Board:
             dy = y - board_y
             
             if (dx >= 0 and dx <= SQUARE) and (dy >= 0 and dy <= SQUARE):
+                
                 if self.selected_pawn.row != -1 and self.selected_pawn.col != -1:
                     self.board[self.selected_pawn.row][self.selected_pawn.col].pop()
                 self.board[row][col].append(self.selected_pawn)
+                
+                if self.selected_pawn in self.pawns_blue:
+                    self.pawns_blue.remove(self.selected_pawn)
+                elif self.selected_pawn in self.pawns_red: 
+                    self.pawns_red.remove(self.selected_pawn)
+                    
                 self.selected_pawn.set_board_position(row, col)
                 self.selected_pawn.set_position(board_x + SQUARE//2, board_y + SQUARE//2)
                 self.selected_pawn.unselect()
@@ -116,18 +157,75 @@ class Board:
                 return
                     
         
-    def find_possible_moves(self):
-        if not self.selected_pawn:
-            self.possible_moves = []
-            return
-        
-        self.possible_moves = []
+    def find_possible_moves(self, board, color, value):
+        possible_moves = []
         for row in range(RC):
             for col in range(RC):
-                if self.board[row][col] != [] and self.board[row][col][-1].color == self.turn:
+                if board[row][col] != [] and board[row][col][-1].color == color:
                     continue
-                if self.board[row][col] == [] or self.board[row][col][-1].value < self.selected_pawn.value:
-                    self.possible_moves.append((row, col))
+                if board[row][col] == [] or board[row][col][-1].value < value:
+                    possible_moves.append((row, col))
+                    
+        return possible_moves
+    
+    def get_possible_boards(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], color):
+        possible_boards = []
+        pawns = []
+       
+        if color == RED:
+            pawns.extend(pawns_red)
+        else : pawns.extend(pawns_blue)
+        
+        for row in board:
+            for cell in row:
+                if cell == []:
+                    continue
+                if cell[-1].color == color:
+                    pawns.append(cell[-1])
+        
+        for pawn in pawns:
+            possible_moves = self.find_possible_moves(board, pawn.color, pawn.value)
+            
+            for move in possible_moves:
+                (row, col) = move
+                temp_board = [
+                    [[], [], []],
+                    [[], [], []],
+                    [[], [], []]
+                ]
+                
+                for r in range(RC):
+                    for c in range(RC):
+                        temp_board[r][c].extend(board[r][c])
+                # print("temp_board ", temp_board[0], temp_board[1], temp_board[2], sep='\n')
+                
+                # exit()
+                
+                reds = []
+                blues = []
+                reds.extend(pawns_red)
+                blues.extend(pawns_blue)
+                
+                if pawn in blues:
+                    blues.remove(pawn)
+                elif pawn in reds:
+                    reds.remove(pawn)
+                else:
+                    temp_board[pawn.row][pawn.col].pop()
+                    
+                pawn: Pawn
+                new_pawn = Pawn(pawn.value, pawn.color, pawn.x, pawn.y)
+                
+                board_x = (75 + col * SQUARE)
+                board_y = (175 + row * SQUARE)
+                
+                new_pawn.set_board_position(row, col)
+                new_pawn.set_position(board_x + SQUARE//2, board_y + SQUARE//2)
+                
+                temp_board[row][col].append(new_pawn)
+                possible_boards.append((temp_board, blues, reds))
+                
+        return possible_boards
                     
     def draw_possible_moves(self):
         if self.possible_moves == []:
@@ -139,9 +237,65 @@ class Board:
             
     def switch_turn(self):
         if self.turn == BLUE:
+            # print("board_before ", self.board[0], self.board[1], self.board[2], sep='\n')
+            # print("winner ", self.check_winner(self.board, log=True))
             self.turn = RED
+            if self.ai:
+                # self.bestMove()
+                start = time.time()
+                # MINIMAX
+                algo = "minimax "
+                evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
+                
+                # ALPHA BETA PRUNING
+                # algo = "alpha betha pruning "
+                # evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
+                
+                end = time.time()
+                print( algo, f"time: {end-start}")
+                # print("evaluation ", evaluation)
+                # print("best_board ", best_board[0], best_board[1], best_board[2], sep='\n')
+                # print("pawns_blue ", pawns_blue)
+                # print("pawns_red ", pawns_red)
+                if evaluation > -1:
+                    self.board = best_board
+                    self.pawns_blue = pawns_blue
+                    self.pawns_red = pawns_red
+                # for row in range(RC):
+                #     for col in range(RC):
+                #         if len(self.board[row][col]) != 0:
+                #             # print("TIPE= ",self.board[row][col][-1].row, self.board[row][col][-1].col)
+                #             if self.board[row][col][-1] in self.pawns_red:
+                #                 self.pawns_red.remove(self.board[row][col][-1])
+                #             self.board[row][col][-1].row = row
+                #             self.board[row][col][-1].col = col
+                #             self.board[row][col][-1].x = 75 + col * SQUARE + SQUARE//2
+                #             self.board[row][col][-1].y = 175 + row * SQUARE + SQUARE//2
+                            
+                            # print("HABIS= ",self.board[row][col][-1].row, self.board[row][col][-1].col)
+                            # self.board[row][col][-1](row, col)
+                            # self.board[row][col][-1](75 + col * SQUARE + SQUARE//2, 175 + row * SQUARE + SQUARE//2)
+                self.turn = BLUE
+                
+                
         else:
             self.turn = BLUE
+        # pawns = []
+        # if self.turn == BLUE:
+        #     pawns.extend(self.pawns_red)
+        #     self.turn = RED
+        # else:
+        #     pawns.extend(self.pawns_blue)
+        #     self.turn = BLUE
+            
+        # for row in self.board:
+        #     for cell in row:
+        #         if cell == []:
+        #             continue
+        #         if cell[-1].color == self.turn:
+        #             pawns.append(cell[-1])
+                
+        # print(self.get_possible_boards(self.board, pawns))
 
     def draw_turn(self):
         if self.selected_pawn is not None:
@@ -173,68 +327,44 @@ class Board:
             return True
         return False
     
-    def check_winner(self):
+    def check_winner_board(self):
+        return self.check_winner(self.board)
+    
+    def check_winner(self, board, log=False):
         col = 0
         row = 0
         winner = None
+        # print("board_check ", board[0], board[1], board[2], sep='\n') if log else None
+
         
         for a in range(RC):
-            if self.pawn_existed(self.board[a][col],self.board[a][col+1], self.board[a][col+2]) :
-                if self.pawn_in_row(self.board[a][col][-1].color, self.board[a][col+1][-1].color, self.board[a][col+2][-1].color):
-                    if winner == None or winner == self.board[a][col][-1].color:
-                        winner = self.board[a][col][-1].color
+            if self.pawn_existed(board[a][col],board[a][col+1], board[a][col+2]) :
+                if self.pawn_in_row(board[a][col][-1].color, board[a][col+1][-1].color, board[a][col+2][-1].color):
+                    if winner == None or winner == board[a][col][-1].color:
+                        winner = board[a][col][-1].color
                     else:
                         return GREEN
                     
         for b in range(RC):
-            if self.pawn_existed(self.board[row][b], self.board[row+1][b], self.board[row+2][b]) :
-                if self.pawn_in_row(self.board[row][b][-1].color, self.board[row+1][b][-1].color, self.board[row+2][b][-1].color):
-                    if winner == None or winner == self.board[row][b][-1].color:
-                        winner = self.board[row][b][-1].color
+            if self.pawn_existed(board[row][b], board[row+1][b], board[row+2][b]) :
+                if self.pawn_in_row(board[row][b][-1].color, board[row+1][b][-1].color, board[row+2][b][-1].color):
+                    if winner == None or winner == board[row][b][-1].color:
+                        winner = board[row][b][-1].color
                     else:
                         return GREEN
                 
-        if self.pawn_existed(self.board[row][col], self.board[row+1][col+1], self.board[row+2][col+2]) :
-                if self.pawn_in_row(self.board[row][col][-1].color, self.board[row+1][col+1][-1].color, self.board[row+2][col+2][-1].color):
-                    if winner == None or winner == self.board[row][col][-1].color:
-                        winner = self.board[row][col][-1].color
+        if self.pawn_existed(board[row][col], board[row+1][col+1], board[row+2][col+2]) :
+                if self.pawn_in_row(board[row][col][-1].color, board[row+1][col+1][-1].color, board[row+2][col+2][-1].color):
+                    if winner == None or winner == board[row][col][-1].color:
+                        winner = board[row][col][-1].color
                     else:
                         return GREEN
-        elif self.pawn_existed(self.board[row][col+2], self.board[row+1][col+1], self.board[row+2][col]) :
-                if self.pawn_in_row(self.board[row][col+2][-1].color, self.board[row+1][col+1][-1].color, self.board[row+2][col][-1].color):
-                    if winner == None or winner == self.board[row][col+2][-1].color:
-                            winner = self.board[row][col+2][-1].color
+        if self.pawn_existed(board[row][col+2], board[row+1][col+1], board[row+2][col]) :
+                if self.pawn_in_row(board[row][col+2][-1].color, board[row+1][col+1][-1].color, board[row+2][col][-1].color):
+                    if winner == None or winner == board[row][col+2][-1].color:
+                            winner = board[row][col+2][-1].color
                     else:
                         return GREEN
-        
-        # for a in range(RC):
-        #     if self.board[a][col] != [] and self.board[a][col+1] != [] and self.board[a][col+2] != [] :
-        #         if self.board[a][col][-1].color == self.board[a][col+1][-1].color and self.board[a][col+1][-1].color == self.board[a][col+2][-1].color:
-        #             if winner == None or winner == self.board[a][col][-1].color:
-        #                 winner = self.board[a][col][-1].color
-        #             else:
-        #                 return GREEN
-                    
-        # for b in range(RC):
-        #     if self.board[row][b] != [] and self.board[row+1][b] != [] and self.board[row+2][b] != [] :
-        #         if self.board[row][b][-1].color == self.board[row+1][b][-1].color and self.board[row+1][b][-1].color == self.board[row+2][b][-1].color:
-        #             if winner == None or winner == self.board[row][b][-1].color:
-        #                 winner = self.board[row][b][-1].color
-        #             else:
-        #                 return GREEN
-                
-        # if self.board[row][col] != [] and self.board[row+1][col+1] != [] and self.board[row+2][col+2] != [] :
-        #         if self.board[row][col][-1].color == self.board[row+1][col+1][-1].color and self.board[row+1][col+1][-1].color == self.board[row+2][col+2][-1].color:
-        #             if winner == None or winner == self.board[row][col][-1].color:
-        #                 winner = self.board[row][col][-1].color
-        #             else:
-        #                 return GREEN
-        # elif self.board[row][col+2] != [] and self.board[row+1][col+1] != [] and self.board[row+2][col] != [] :
-        #         if self.board[row][col+2][-1].color == self.board[row+1][col+1][-1].color and self.board[row+1][col+1][-1].color == self.board[row+2][col][-1].color:
-        #             if winner == None or winner == self.board[row][col+2][-1].color:
-        #                     winner = self.board[row][col+2][-1].color
-        #             else:
-        #                 return GREEN
         
         return winner
     
@@ -256,3 +386,130 @@ class Board:
         for button in [self.home_button, self.quit_button]:
             button.hoverColor(pygame.mouse.get_pos())
             button.update(screen)
+    
+    def evaluate(self, board, is_max):
+        pawns_red = []
+        pawns_blue = []
+        blue_point = 0
+        red_point = 0
+        total_point = 0
+        
+        for row in board:
+            for cell in row:
+                if cell == []:
+                    continue
+                else:
+                    for i in range(len(cell)):
+                        total_point+=cell[i].value
+                if cell[-1].color == BLUE:
+                    pawns_blue.append(cell[-1])
+                    blue_point+=cell[-1].value
+                if cell[-1].color == RED:
+                    pawns_red.append(cell[-1])
+                    red_point+=cell[-1].value
+        
+        # print ("red ", len(pawns_red), " blue ", pawns_blue)
+        
+        if is_max:
+            # print("eval max ", red_point/total_point)    
+            return red_point/total_point
+        else:
+            # print("eval min ", blue_point/total_point) 
+            return - (blue_point/total_point)
+     
+    def minimax(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True):
+        winner = self.check_winner(board)
+            
+        
+        if  winner != None or depth == 0:
+            if winner is RED:
+                return [1, board, pawns_blue, pawns_red]
+            elif winner is BLUE:
+                return [-1, board, pawns_blue, pawns_red]
+            elif winner is GREEN:
+                return [0, board, pawns_blue, pawns_red]
+            else:
+                return [self.evaluate(board, is_max), board, pawns_blue, pawns_red]
+            
+        if is_max:
+            max_eval = float('-inf')
+            best_move = None
+            best_pawns_red = pawns_red
+            
+            for move, _, reds in self.get_possible_boards(board, pawns_blue, best_pawns_red, RED):
+                evaluation = self.minimax(move, pawns_blue, best_pawns_red, depth-1, False)[0]
+                max_eval = max(evaluation, max_eval)
+                if evaluation == max_eval:
+                    best_move = move
+                    best_pawns_red  = reds
+        
+            return [max_eval, best_move, pawns_blue, best_pawns_red]
+        
+        else :
+            min_eval = float('inf')
+            best_move = None
+            best_pawns_blue = pawns_blue
+            
+            for move, blues, _ in self.get_possible_boards(board, best_pawns_blue, pawns_red, BLUE):
+                evaluation = self.minimax(move, best_pawns_blue, pawns_red, depth-1, True)[0]
+                min_eval = min(evaluation, min_eval)
+                if evaluation == min_eval:
+                    best_move = move
+                    best_pawns_blue  = blues
+        
+            return [min_eval, best_move, best_pawns_blue, pawns_red]
+        
+        
+    def alphabetha(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True, alpha: float = float('-inf'), beta: float = float('inf')):
+        winner = self.check_winner(board)
+            
+        
+        if  winner != None or depth == 0:
+            if winner is RED:
+                return [1, board, pawns_blue, pawns_red]
+            elif winner is BLUE:
+                return [-1, board, pawns_blue, pawns_red]
+            elif winner is GREEN:
+                return [0, board, pawns_blue, pawns_red]
+            else:
+                return [self.evaluate(board, is_max), board, pawns_blue, pawns_red]
+            
+        if is_max:
+            max_eval = float('-inf')
+            best_move = None
+            best_pawns_red = pawns_red
+            
+            for move, _, reds in self.get_possible_boards(board, pawns_blue, best_pawns_red, RED):
+                evaluation = self.alphabetha(move, pawns_blue, best_pawns_red, depth-1, False, alpha, beta)[0]
+                max_eval = max(evaluation, max_eval)
+                
+                if max_eval>beta:
+                    break
+                
+                alpha = max(alpha, max_eval)
+                
+                if evaluation == max_eval:
+                    best_move = move
+                    best_pawns_red  = reds
+        
+            return [max_eval, best_move, pawns_blue, best_pawns_red]
+        
+        else :
+            min_eval = float('inf')
+            best_move = None
+            best_pawns_blue = pawns_blue
+            
+            for move, blues, _ in self.get_possible_boards(board, best_pawns_blue, pawns_red, BLUE):
+                evaluation = self.alphabetha(move, best_pawns_blue, pawns_red, depth-1, True, alpha, beta)[0]
+                min_eval = min(evaluation, min_eval)
+                
+                if min_eval < alpha:
+                    break
+                
+                beta = min(beta, min_eval)
+                
+                if evaluation == min_eval:
+                    best_move = move
+                    best_pawns_blue  = blues
+        
+            return [min_eval, best_move, best_pawns_blue, pawns_red]
