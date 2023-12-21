@@ -1,12 +1,12 @@
 import pygame
+import time
+
 from cons import *
 from pawn import Pawn
 from button import Button
-import time
-
 
 class Board:
-    
+    # inisiasi
     def __init__(self, screen):
         self.screen = screen
         self.board = [
@@ -21,7 +21,9 @@ class Board:
         self.possible_moves = []
         self.turn = BLUE
         self.ai = False
-        
+        self.algorithm = None
+    
+    # fungsi reset apabila user bermain kembali
     def reset(self):
         self.board = [
             [[], [], []],
@@ -34,10 +36,14 @@ class Board:
         self.selected_pawn: Pawn = None
         self.possible_moves = []
         self.turn = BLUE
-        
+        self.ai = False
+        self.algorithm = None
+    
+    # mengisi flag jika bermain dengan AI
     def isAI(self, ai):
         self.ai = ai
-        
+    
+    # menampilan elemen yang ada pada halaman game
     def draw(self):
         self.draw_board()
         self.draw_possible_moves()
@@ -45,38 +51,45 @@ class Board:
         self.draw_pawn()
         self.draw_turn()
 
+    # memuat pawn object
     def add_pawn(self):
-        for i in range(75, SCREEN_WIDTH-75, 90):
-            self.pawns_red.append(Pawn((i-75)//90 + 1, RED, i+45, 85))
-            self.pawns_blue.append(Pawn((i-75)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90))
+        for i in range(MARGIN_SIDE, SCREEN_WIDTH-MARGIN_SIDE, 90):
+            self.pawns_red.append(Pawn((i-MARGIN_SIDE)//90 + 1, RED, i+45, 85))
+            self.pawns_blue.append(Pawn((i-MARGIN_SIDE)//90 + 1, BLUE, i+45, SCREEN_HEIGHT-90))
 
+    # menggambar pawn pada screen
     def draw_pawn(self):
-
+        # menampilkan pawn biru yang tidak ada di papan
         for pawn in self.pawns_blue:
             pawn.draw(self.screen)
-            
+        
+        # menampilkan pawn merah yang tidak ada di papan
         for pawn in self.pawns_red:
             pawn.draw(self.screen)
-            
+        
+        # menampilkan pawn yang ada di papan
         for row in self.board:
             for cell in row:
                 if cell == []:
                     continue
                 cell[-1].draw(self.screen)
 
+    # menggambar papan game
     def draw_board(self):
         for row in range(RC):
             for col in range(RC):
                 if (row+col)%2:
-                    pygame.draw.rect(self.screen, BLACK, (col*SQUARE +75, row*SQUARE+175, SQUARE, SQUARE))
+                    pygame.draw.rect(self.screen, BLACK, (col*SQUARE +MARGIN_SIDE, row*SQUARE+MARGIN_TOP, SQUARE, SQUARE))
                 else:
-                    pygame.draw.rect(self.screen, WHITE, (col*SQUARE +75, row*SQUARE+175, SQUARE, SQUARE))
-        
+                    pygame.draw.rect(self.screen, WHITE, (col*SQUARE +MARGIN_SIDE, row*SQUARE+MARGIN_TOP, SQUARE, SQUARE))
+    
+    # menggambar border papan game
     def draw_board_border(self):
         for row in range(RC):
             for col in range(RC):
-                pygame.draw.rect(self.screen, RED, (col*SQUARE +75-4, row*SQUARE+175-4, SQUARE+4, SQUARE+4), 4)
-         
+                pygame.draw.rect(self.screen, RED, (col*SQUARE +MARGIN_SIDE-4, row*SQUARE+MARGIN_TOP-4, SQUARE+4, SQUARE+4), 4)
+    
+    # update ketika menerima input dari mouse
     def update(self, pos):
         if self.turn == BLUE or self.ai == False:
             self.click_board(pos)
@@ -87,13 +100,13 @@ class Board:
             else:
                 self.possible_moves = []
         
-            
+    # fungsi ketika pawn ditekan atau memilih pawn
     def click_pawn(self, pos):
         (x, y) = pos
         selecting = False
-        
         pawn_list = []
         
+        # memeriksa giliran
         if self.turn == BLUE:
             pawn_list.extend(self.pawns_blue)
         else:
@@ -110,9 +123,6 @@ class Board:
             if pawn.color != self.turn:
                 continue
             
-            # if pawn.row != -1 and pawn.col != -1 and self.board[pawn.row][pawn.col][-1] != pawn:
-            #     continue
-            
             if not pawn.is_collide(x, y):
                 continue
             
@@ -126,15 +136,20 @@ class Board:
         if not selecting and self.selected_pawn:
             self.selected_pawn.unselect()
             self.selected_pawn = None
-            
+    
+    # fungsi ketika board di tekan atau meletakkan pawn ke board 
     def click_board(self, pos):
+        # return jika tidak ada pawn yang dipilih
         if not self.selected_pawn:
             return
+        
         (x, y) = pos
+        
+        # memeriksa input mouse dan memindahkan pawn ke petak yang dipilih
         for move in self.possible_moves:
             (row, col) = move
-            board_x = (75 + col * SQUARE)
-            board_y = (175 + row * SQUARE)
+            board_x = (MARGIN_SIDE + col * SQUARE)
+            board_y = (MARGIN_TOP + row * SQUARE)
             dx = x - board_x
             dy = y - board_y
             
@@ -157,7 +172,7 @@ class Board:
                 self.switch_turn()
                 return
                     
-        
+    # menemukan gerak yang mungkin dilakukan sebuah pawn
     def find_possible_moves(self, board, color, value):
         possible_moves = []
         for row in range(RC):
@@ -169,21 +184,25 @@ class Board:
                     
         return possible_moves
     
+    # menemukan kombinasi board yang mungkin
     def get_possible_boards(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], color):
         possible_boards = []
         pawns = []
        
+        # menyalin pawn
         if color == RED:
             pawns.extend(pawns_red)
         else : pawns.extend(pawns_blue)
         
+        # menyalin pawn yang ada pada board
         for row in board:
             for cell in row:
                 if cell == []:
                     continue
                 if cell[-1].color == color:
                     pawns.append(cell[-1])
-        
+                    
+        # melakukan simulasi peletakan pawn pada papan
         for pawn in pawns:
             possible_moves = self.find_possible_moves(board, pawn.color, pawn.value)
             
@@ -195,13 +214,12 @@ class Board:
                     [[], [], []]
                 ]
                 
+                # menyalin papan
                 for r in range(RC):
                     for c in range(RC):
                         temp_board[r][c].extend(board[r][c])
-                # print("temp_board ", temp_board[0], temp_board[1], temp_board[2], sep='\n')
                 
-                # exit()
-                
+                # menyalin pawn yang akan sisimulasikan
                 reds = []
                 blues = []
                 reds.extend(pawns_red)
@@ -213,36 +231,38 @@ class Board:
                     reds.remove(pawn)
                 else:
                     temp_board[pawn.row][pawn.col].pop()
-                    
+                
+                # mengubah atribut pawn (koordinat x y dan row column)
                 pawn: Pawn
                 new_pawn = Pawn(pawn.value, pawn.color, pawn.x, pawn.y)
                 
-                board_x = (75 + col * SQUARE)
-                board_y = (175 + row * SQUARE)
+                board_x = (MARGIN_SIDE + col * SQUARE)
+                board_y = (MARGIN_TOP + row * SQUARE)
                 
                 new_pawn.set_board_position(row, col)
                 new_pawn.set_position(board_x + SQUARE//2, board_y + SQUARE//2)
                 
+                # simulasi
                 temp_board[row][col].append(new_pawn)
                 possible_boards.append((temp_board, blues, reds))
                 
         return possible_boards
-                    
+    
+    # menampilkan petak yang mungkin ditempati pawn
     def draw_possible_moves(self):
         if self.possible_moves == []:
             return
         
         for move in self.possible_moves:
             (row, col) = move
-            pygame.draw.rect(self.screen, GREEN, (col*SQUARE +75, row*SQUARE+175, SQUARE, SQUARE))
-            
+            pygame.draw.rect(self.screen, GREEN, (col*SQUARE +MARGIN_SIDE, row*SQUARE+MARGIN_TOP, SQUARE, SQUARE))
+    
+    # mengganti giliran permainan
     def switch_turn(self):
         if self.turn == BLUE:
-            # print("board_before ", self.board[0], self.board[1], self.board[2], sep='\n')
-            # print("winner ", self.check_winner(self.board, log=True))
             self.turn = RED
+            # jika bermain bersama AI maka algoritma dijalankan di sini
             if self.ai:
-                # self.bestMove()
                 start = time.time()
                 
                 # MINIMAX
@@ -257,50 +277,15 @@ class Board:
                 
                 end = time.time()
                 print( algo, f"time: {end-start}")
-                # print("evaluation ", evaluation)
-                # print("best_board ", best_board[0], best_board[1], best_board[2], sep='\n')
-                # print("pawns_blue ", pawns_blue)
-                # print("pawns_red ", pawns_red)
 
                 self.board = best_board
                 self.pawns_blue = pawns_blue
                 self.pawns_red = pawns_red
-                # for row in range(RC):
-                #     for col in range(RC):
-                #         if len(self.board[row][col]) != 0:
-                #             # print("TIPE= ",self.board[row][col][-1].row, self.board[row][col][-1].col)
-                #             if self.board[row][col][-1] in self.pawns_red:
-                #                 self.pawns_red.remove(self.board[row][col][-1])
-                #             self.board[row][col][-1].row = row
-                #             self.board[row][col][-1].col = col
-                #             self.board[row][col][-1].x = 75 + col * SQUARE + SQUARE//2
-                #             self.board[row][col][-1].y = 175 + row * SQUARE + SQUARE//2
-                            
-                            # print("HABIS= ",self.board[row][col][-1].row, self.board[row][col][-1].col)
-                            # self.board[row][col][-1](row, col)
-                            # self.board[row][col][-1](75 + col * SQUARE + SQUARE//2, 175 + row * SQUARE + SQUARE//2)
-                self.turn = BLUE
-                
-                
+                self.turn = BLUE      
         else:
             self.turn = BLUE
-        # pawns = []
-        # if self.turn == BLUE:
-        #     pawns.extend(self.pawns_red)
-        #     self.turn = RED
-        # else:
-        #     pawns.extend(self.pawns_blue)
-        #     self.turn = BLUE
-            
-        # for row in self.board:
-        #     for cell in row:
-        #         if cell == []:
-        #             continue
-        #         if cell[-1].color == self.turn:
-        #             pawns.append(cell[-1])
-                
-        # print(self.get_possible_boards(self.board, pawns))
 
+    # menampilkan giliran bermain di layar
     def draw_turn(self):
         if self.selected_pawn is not None:
             return 
@@ -320,27 +305,29 @@ class Board:
         self.screen.blit(text_stroke_surface, text_stroke_rect.move(3, -3))
         self.screen.blit(text, text_rect)
 
-        
+    # memeriksa apakah pawn pada susunan tertentu ada
     def pawn_existed(self, a, b, c):
         if a != [] and b != [] and c != []:
             return True
         return False
     
+    # memeriksa apakah pawn pada susunan tertentu memiliki warna yang sama 
     def pawn_in_row(self, a, b, c):
         if a==b and b==c:
             return True
         return False
     
+    # memeriksa pemenang saat ini
     def check_winner_board(self):
         return self.check_winner(self.board)
     
+    # memeriksa pemenang pada board
     def check_winner(self, board, log=False):
         col = 0
         row = 0
         winner = None
-        # print("board_check ", board[0], board[1], board[2], sep='\n') if log else None
-
         
+        # memeriksa papan secara horizontal 
         for a in range(RC):
             if self.pawn_existed(board[a][col],board[a][col+1], board[a][col+2]) :
                 if self.pawn_in_row(board[a][col][-1].color, board[a][col+1][-1].color, board[a][col+2][-1].color):
@@ -349,6 +336,7 @@ class Board:
                     else:
                         return GREEN
                     
+        # memeriksa papan secara vertikal 
         for b in range(RC):
             if self.pawn_existed(board[row][b], board[row+1][b], board[row+2][b]) :
                 if self.pawn_in_row(board[row][b][-1].color, board[row+1][b][-1].color, board[row+2][b][-1].color):
@@ -357,21 +345,25 @@ class Board:
                     else:
                         return GREEN
                 
+        # memeriksa papan secara diagonal [(0,0), (1,1), (2,2)]
         if self.pawn_existed(board[row][col], board[row+1][col+1], board[row+2][col+2]) :
-                if self.pawn_in_row(board[row][col][-1].color, board[row+1][col+1][-1].color, board[row+2][col+2][-1].color):
-                    if winner == None or winner == board[row][col][-1].color:
-                        winner = board[row][col][-1].color
-                    else:
-                        return GREEN
+            if self.pawn_in_row(board[row][col][-1].color, board[row+1][col+1][-1].color, board[row+2][col+2][-1].color):
+                if winner == None or winner == board[row][col][-1].color:
+                    winner = board[row][col][-1].color
+                else:
+                    return GREEN
+        
+        # memeriksa papan secara diagonal [(0,2), (1,1), (2,0)]
         if self.pawn_existed(board[row][col+2], board[row+1][col+1], board[row+2][col]) :
-                if self.pawn_in_row(board[row][col+2][-1].color, board[row+1][col+1][-1].color, board[row+2][col][-1].color):
-                    if winner == None or winner == board[row][col+2][-1].color:
-                            winner = board[row][col+2][-1].color
-                    else:
-                        return GREEN
+            if self.pawn_in_row(board[row][col+2][-1].color, board[row+1][col+1][-1].color, board[row+2][col][-1].color):
+                if winner == None or winner == board[row][col+2][-1].color:
+                        winner = board[row][col+2][-1].color
+                else:
+                    return GREEN
         
         return winner
     
+    # membuat tampilan pemenang jika sudah mendapatkan winner
     def winner(self, screen, win):
         pygame.draw.rect(screen, BG, (20, SCREEN_HEIGHT//3, SCREEN_WIDTH-40, SCREEN_HEIGHT//3))
         pygame.draw.rect(screen, (0, 0, 0), (20, SCREEN_HEIGHT//3, SCREEN_WIDTH-40, SCREEN_HEIGHT//3), 4)
@@ -391,9 +383,8 @@ class Board:
             button.hoverColor(pygame.mouse.get_pos())
             button.update(screen)
     
+    # fungsi evaluasi keunggulan agent atau lawan
     def evaluate(self, board, is_max):
-        pawns_red = []
-        pawns_blue = []
         blue_point = 0
         red_point = 0
         total_point = 0
@@ -406,25 +397,23 @@ class Board:
                     for i in range(len(cell)):
                         total_point+=cell[i].value
                 if cell[-1].color == BLUE:
-                    pawns_blue.append(cell[-1])
                     blue_point+=cell[-1].value
                 if cell[-1].color == RED:
-                    pawns_red.append(cell[-1])
                     red_point+=cell[-1].value
         
-        # print ("red ", len(pawns_red), " blue ", pawns_blue)
-        
-        if is_max:
-            # print("eval max ", red_point/total_point)    
+        if red_point == blue_point:
+            return 0
+
+        if is_max:   
             return red_point/total_point
         else:
-            # print("eval min ", blue_point/total_point) 
             return - (blue_point/total_point)
      
+    # minimax algorithm
     def minimax(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True):
         winner = self.check_winner(board)
-            
         
+        # memeriksa pemenang dan depth sebagai base case
         if  winner != None or depth == 0:
             if winner is RED:
                 return [1, board, pawns_blue, pawns_red]
@@ -434,7 +423,8 @@ class Board:
                 return [0, board, pawns_blue, pawns_red]
             else:
                 return [self.evaluate(board, is_max), board, pawns_blue, pawns_red]
-            
+        
+        # max jika giliran AI
         if is_max:
             max_eval = float('-inf')
             best_move = None
@@ -449,6 +439,7 @@ class Board:
         
             return [max_eval, best_move, pawns_blue, best_pawns_red]
         
+        # min jika giliran pemain
         else :
             min_eval = float('inf')
             best_move = None
@@ -463,11 +454,11 @@ class Board:
         
             return [min_eval, best_move, best_pawns_blue, pawns_red]
         
-        
+    # alpha-beta algorithm
     def alphabetha(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True, alpha: float = float('-inf'), beta: float = float('inf')):
         winner = self.check_winner(board)
-            
         
+        # memeriksa pemenang dan depth sebagai base case
         if  winner != None or depth == 0:
             if winner is RED:
                 return [1, board, pawns_blue, pawns_red]
@@ -477,7 +468,8 @@ class Board:
                 return [0, board, pawns_blue, pawns_red]
             else:
                 return [self.evaluate(board, is_max), board, pawns_blue, pawns_red]
-            
+        
+        # max jika giliran AI
         if is_max:
             max_eval = float('-inf')
             best_move = None
@@ -487,6 +479,7 @@ class Board:
                 evaluation = self.alphabetha(move, pawns_blue, best_pawns_red, depth-1, False, alpha, beta)[0]
                 max_eval = max(evaluation, max_eval)
                 
+                # melakukan pruning
                 if max_eval>=beta:
                     break
                 
@@ -498,6 +491,7 @@ class Board:
         
             return [max_eval, best_move, pawns_blue, best_pawns_red]
         
+        # min jika giliran AI
         else :
             min_eval = float('inf')
             best_move = None
@@ -507,6 +501,7 @@ class Board:
                 evaluation = self.alphabetha(move, best_pawns_blue, pawns_red, depth-1, True, alpha, beta)[0]
                 min_eval = min(evaluation, min_eval)
                 
+                # melakukan pruning
                 if min_eval < alpha:
                     break
                 

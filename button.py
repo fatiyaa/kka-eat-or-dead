@@ -1,6 +1,7 @@
 import pygame
 
 class Button:
+    # inisiasi
     def __init__(self, x, y, text, font, text_color, base_color, hover_color):
         self.x = x
         self.y = y
@@ -12,9 +13,11 @@ class Button:
         self.rect = pygame.Rect(x, y, 200, 50)
         self.is_hovered = False
 
+    # set warna saat hovering
     def hoverColor(self, mouse_pos):
         self.is_hovered = self.rect.collidepoint(mouse_pos)
 
+    # update agar dapat menampilkan button dan menerima respon ketika hover maupun clicked
     def update(self, screen):
         padding = 5
         padded_rect = self.rect.inflate(-2 * padding, 0)
@@ -28,5 +31,6 @@ class Button:
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
+    # checking mouse input
     def checkMouseInput(self, mouse_pos):
         return self.is_hovered and pygame.mouse.get_pressed()[0] == 1

@@ -1,19 +1,22 @@
 import pygame
+
 from button import Button
 from cons import *
 
 class Home:
+    # inisiasi
     def __init__(self, screen):
         self.screen = screen
         self.start_button = None
         self.exit_button = None
 
+    # menampilkan halaman how
     def draw(self):
         self.draw_title()
         self.draw_logo()
         self.draw_button(self.screen)
         
-
+    # menampilkan judul game
     def draw_title(self):
         font = pygame.font.SysFont(None, 100)
 
@@ -36,18 +39,19 @@ class Home:
         self.screen.blit(dead_text, (x_title + eat_width + or_width, y_title))
         
         
-
+    # menampilkan image logo
     def draw_logo(self):
         logo = pygame.image.load("assets\Icon.png")
         logo_size = 300
         
-        scaled_logo = pygame.transform.scale(logo, (logo_size, logo_size))
+        scaled_logo = pygame.transform.smoothscale(logo, (logo_size, logo_size))
 
         x_logo = (SCREEN_WIDTH - logo_size) // 2
         y_logo = (SCREEN_HEIGHT - logo_size) // 2
 
         self.screen.blit(scaled_logo, (x_logo, y_logo))
-
+        
+    # menampilan button
     def draw_button(self,screen):
         font = pygame.font.SysFont(None, 50)
         x_button = (SCREEN_WIDTH - BUTTON_WIDTH) // 2

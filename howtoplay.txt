@@ -1,35 +1,41 @@
-Eat or death adalah perpaduan permainan catur dengan permainan 
-tic tac toe, dimana sebuah bidak dapat memakan dan dimakan
-serta untuk memenangkannya kita harus menyusun 3 bidak kita 
-secara horizontal/vertikal/diagonal.
+                                        DESKRIPSI
+Eat or death adalah perpaduan permainan tic tac toe dengan 
+permainan catur, dimana sebuah bidak dapat memakan dan 
+dimakan. Untuk memenangkannya, pemain harus menyusun 
+3 bidak secara horizontal/vertikal/diagonal.
 
-~Gameplay :
-Player akan bergiliran dan akan memilih salah satu aksi yaitu
+                                        GAMEPLAY
+Player akan bergiliran memilih salah satu aksi yaitu
 
-1. Menambahkan bidak
-- Saat giliran Anda, Anda dapat menambahkan bida ke dalam papan 
-  permainan
-- Level bidak mempengaruhi penempatan pada papan:
-* Level kecil hanya bisa diletakkan pada papan kosong.
-* Level besar hanya bisa diletakkan pada papan kosong atau 
-  memakan bidak yang levelnya lebih kecil.
-* Jika levelnya sama, maka bidak tidak bisa saling memakan.
+  1. Meletakkan Bidak
+    - Saat giliran Anda, Anda dapat meletakkan bidak ke dalam 
+      papan permainan
+    - Level bidak mempengaruhi penempatan pada papan:
+        * Level kecil hanya bisa diletakkan pada papan kosong.
+        * Level besar bisa diletakkan pada papan kosong atau 
+          memakan bidak dengan level lebih kecil.
+        * Jika memiliki level atau warna yang sama, 
+          maka bidak tidak bisa saling memakan.
 
-2. Memindahkan bidak
-- Saat giliran Anda, Anda dapat memindahkan bidaknya ke tempat
-  yang kosong, atau memakan bidak yang levelnya lebih kecil
+  2. Memindahkan Bidak
+    - Saat giliran Anda, Anda dapat memindahkan bidak pada 
+      papan ke tempat kosong atau memakan bidak dengan 
+      level lebih kecil
 
-~State menang :
-Permainan akan berakhir jika seorang pemain dapat menyusun 3
+                                         WIN STATE
+Permainan akan berakhir jika pemain dapat menyusun 3
 bidaknya secara berurutan baik secara horizontal, vertikal, 
 atau diagonal
 
-~State seri :
-Permainan akan berakhir jika semua isi papan terpenuhi dengan 
-bidak, dan tidak ada pemain yang memiliki 3 bidak berturut-turut.
-Dalam hal ini, game akan berakhir dengan seri.
+                                        DRAW STATE
+Permainan akan berakhir jika kedua pemain memenuhi state 
+pemenang dalam waktu bersamaan.
 
-Note :
-Jika terdapat bidak lebih kecil yang dimakan lalu bidak akan 
-berpindah tempat lagi, maka bidak kecil tersebut yang dimakan
-akan tetap ditempatnya.
+                                  URUTAN NILAI BIDAK
+                QUEEN - ROOK - BISHOP - KNIGHT - PAWN
+                    (5)          (4)          (3)             (2)           (1)
+
+                                              NOTE
+Jika terdapat bidak lebih kecil yang dimakan lalu bidak 
+pemakan berpindah tempat, maka bidak kecil tersebut akan 
+tetap ditempatnya dan dapat dimainkan seperti biasa.
