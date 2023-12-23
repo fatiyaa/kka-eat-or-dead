@@ -22,6 +22,8 @@ class Board:
         self.turn = BLUE
         self.ai = False
         self.algorithm = None
+        self.turn_count = 0 
+        
     
     # fungsi reset apabila user bermain kembali
     def reset(self):
@@ -38,6 +40,8 @@ class Board:
         self.turn = BLUE
         self.ai = False
         self.algorithm = None
+        self.turn_count = 0 
+        
     
     # mengisi flag jika bermain dengan AI
     def isAI(self, ai):
@@ -171,6 +175,7 @@ class Board:
                 self.selected_pawn.unselect()
                 self.possible_moves = []
                 self.selected_pawn = None
+                self.turn_count+=1
                 self.switch_turn()
                 return
                     
@@ -376,12 +381,12 @@ class Board:
             # MINIMAX
             if self.algorithm == "MINIMAX":
                 algo = "minimax "
-                evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
+                evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 4)
             
             # ALPHA BETA PRUNING
             if self.algorithm == "ALPHA-BETA":
                 algo = "alpha betha pruning "
-                evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
+                evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 4)
             
             end = time.time()
             print( algo, f"time: {end-start}")
@@ -420,9 +425,11 @@ class Board:
     # minimax algorithm
     def minimax(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True):
         winner = self.check_winner(board)
-        
+        limit = 0 
+        if self.turn_count == 1: limit = 1
+        elif self.turn_count == 2: limit = 2
         # memeriksa pemenang dan depth sebagai base case
-        if  winner != None or depth == 0:
+        if  winner != None or depth == limit:
             if winner is RED:
                 return [1, board, pawns_blue, pawns_red]
             elif winner is BLUE:
@@ -465,9 +472,11 @@ class Board:
     # alpha-beta algorithm
     def alphabetha(self, board, pawns_blue: list[Pawn], pawns_red: list[Pawn], depth, is_max: bool = True, alpha: float = float('-inf'), beta: float = float('inf')):
         winner = self.check_winner(board)
-        
+        limit = 0 
+        if self.turn_count == 1: limit = 1
+        elif self.turn_count == 2: limit = 2
         # memeriksa pemenang dan depth sebagai base case
-        if  winner != None or depth == 0:
+        if  winner != None or depth == limit:
             if winner is RED:
                 return [1, board, pawns_blue, pawns_red]
             elif winner is BLUE:
