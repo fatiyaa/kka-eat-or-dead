@@ -91,6 +91,8 @@ class Board:
     
     # update ketika menerima input dari mouse
     def update(self, pos):
+        if self.turn == RED and self.ai == True:
+            self.run_AI()
         if self.turn == BLUE or self.ai == False:
             self.click_board(pos)
             self.click_pawn(pos)
@@ -261,27 +263,6 @@ class Board:
     def switch_turn(self):
         if self.turn == BLUE:
             self.turn = RED
-            # jika bermain bersama AI maka algoritma dijalankan di sini
-            if self.ai:
-                start = time.time()
-                
-                # MINIMAX
-                if self.algorithm == "MINIMAX":
-                    algo = "minimax "
-                    evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
-                
-                # ALPHA BETA PRUNING
-                if self.algorithm == "ALPHA-BETA":
-                    algo = "alpha betha pruning "
-                    evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
-                
-                end = time.time()
-                print( algo, f"time: {end-start}")
-
-                self.board = best_board
-                self.pawns_blue = pawns_blue
-                self.pawns_red = pawns_red
-                self.turn = BLUE      
         else:
             self.turn = BLUE
 
@@ -295,6 +276,9 @@ class Board:
 
         text = font.render("BLUE's Turn" if self.turn == BLUE else "RED's Turn", True, self.turn)
         text_stroke_surface = text_stroke.render("BLUE's Turn" if self.turn == BLUE else "RED's Turn", True, BLACK)
+        if self.turn == RED and self.ai == True:
+            text = font.render ("COMPUTER's Turn", True, self.turn)
+            text_stroke_surface = text_stroke.render("COMPUTER's Turn", True, BLACK)
 
         text_rect= text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         text_stroke_rect  = text_rect.copy()
@@ -383,6 +367,30 @@ class Board:
             button.hoverColor(pygame.mouse.get_pos())
             button.update(screen)
     
+
+    def run_AI(self):
+        # jika bermain bersama AI maka algoritma dijalankan di sini
+        if self.ai:
+            start = time.time()
+            
+            # MINIMAX
+            if self.algorithm == "MINIMAX":
+                algo = "minimax "
+                evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 3)
+            
+            # ALPHA BETA PRUNING
+            if self.algorithm == "ALPHA-BETA":
+                algo = "alpha betha pruning "
+                evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 3)
+            
+            end = time.time()
+            print( algo, f"time: {end-start}")
+
+            self.board = best_board
+            self.pawns_blue = pawns_blue
+            self.pawns_red = pawns_red
+            self.turn = BLUE
+            
     # fungsi evaluasi keunggulan agent atau lawan
     def evaluate(self, board, is_max):
         blue_point = 0
