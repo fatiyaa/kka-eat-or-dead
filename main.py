@@ -73,17 +73,17 @@ while run:
                         howtoplay.active_choose_screen = False 
                     elif gameboard.quit_button.checkMouseInput(pygame.mouse.get_pos()):
                         run = False
-                        
+
         # menerima respon input dari mouse terhadap pawn dan board
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 gameboard.update(pygame.mouse.get_pos())
-    
+            elif gameboard.turn == RED and gameboard.ai :
+                gameboard.update(pygame.mouse.get_pos())
+                        
     # update pygame display sesuai clock tick
     pygame.display.update()
             
 pygame.quit()
-
-    
