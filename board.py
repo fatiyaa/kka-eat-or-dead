@@ -373,28 +373,27 @@ class Board:
             button.update(screen)
     
 
+    # jika bermain bersama AI maka algoritma dijalankan di sini
     def run_AI(self):
-        # jika bermain bersama AI maka algoritma dijalankan di sini
         if self.ai:
             start = time.time()
             
             # MINIMAX
             if self.algorithm == "MINIMAX":
-                algo = "minimax "
-                evaluation, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 4)
+                _, best_board, pawns_blue, pawns_red = self.minimax(self.board, self.pawns_blue, self.pawns_red, 4)
             
             # ALPHA BETA PRUNING
             if self.algorithm == "ALPHA-BETA":
-                algo = "alpha betha pruning "
-                evaluation, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 4)
+                _, best_board, pawns_blue, pawns_red = self.alphabetha(self.board, self.pawns_blue, self.pawns_red, 4)
             
             end = time.time()
-            print( algo, f"time: {end-start}")
+            print(f"{self.algorithm} time: {end-start}")
 
             self.board = best_board
             self.pawns_blue = pawns_blue
             self.pawns_red = pawns_red
-            self.turn = BLUE
+            self.selected_pawn = None
+            self.switch_turn()
             
     # fungsi evaluasi keunggulan agent atau lawan
     def evaluate(self, board, is_max):
